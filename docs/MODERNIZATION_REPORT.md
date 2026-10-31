@@ -4,8 +4,8 @@ Date: 2026-11-01. Status: implemented and tested development milestones; **not p
 
 ## Review order
 
-1. PR #2 — authentication, backend reliability, shared calculations, broker read-only transport and paper-trade controls.
-2. Terminal/PWA PR — stacked on PR #2; review after the backend changes. Retarget to main after PR #2 is merged.
+1. [PR #2](https://github.com/mybullandbear/nse-dashboard/pull/2) — authentication, backend reliability, shared calculations, broker read-only transport and paper-trade controls.
+2. [PR #3](https://github.com/mybullandbear/nse-dashboard/pull/3) — terminal/PWA work, stacked on PR #2; review after the backend changes. Retarget to main after PR #2 is merged.
 
 Main is unchanged. Existing PR #1 is still open. Detailed inspection found that PR #1 contains additional security edits beyond its original description, including a literal escaped newline in a Python import and configuration additions embedded inside a comment. Its latest CI failed. Do not merge that stale patch alongside this work. Only its portable syntax checker is reused here; the new backend PR provides the tested replacements. No existing branch was deleted or rewritten.
 
