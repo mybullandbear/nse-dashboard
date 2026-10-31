@@ -138,6 +138,7 @@ export async function renderDashboardView(container) {
 
   // Background 2-second auto-poll
   pollTimer = setInterval(async () => {
+    if (document.hidden) return;
     if (!document.body.contains(container)) {
       clearInterval(pollTimer);
       pollTimer = null;

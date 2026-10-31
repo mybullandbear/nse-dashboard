@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>mybullandbear | Centralized Institutional NSE Options &amp; Signal Terminal</title>
   <meta name="description" content="mybullandbear - Centralized decision support & algorithmic trading terminal for NSE index options.">
 
@@ -12,7 +12,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="MyBullAndBear">
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2620/2620610.png">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,6 +24,8 @@
   <link rel="stylesheet" href="/static/css/terminal.css?v=5.4.0">
   <link rel="stylesheet" href="/static/css/mobile.css?v=2.3.0">
 
+  <link rel="stylesheet" href="/static/css/modern-terminal.css?v=7">
+
   <!-- TradingView Lightweight Charts (v4.2.0 pinned) -->
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
   <script>
@@ -32,7 +34,8 @@
     }
   </script>
 </head>
-<body>
+<body class="replay-collapsed">
+  <a class="skip-link" href="#content-mount">Skip to market workspace</a>
 
   <div class="app-container">
     
@@ -55,6 +58,11 @@
 
     <!-- Main Workspace -->
     <main class="main-content">
+      <section class="workspace-toolbar" aria-label="Workspace controls">
+        <div><div class="workspace-eyebrow">MYBULLANDBEAR / NSE F&O</div><h1 id="workspace-title">Market overview</h1><p class="workspace-subtitle" id="workspace-subtitle">Index alignment, option positioning and market context</p></div>
+        <div class="workspace-tools"><span class="paper-badge">PAPER ONLY</span><button id="toggle-replay" type="button" aria-expanded="false" aria-controls="master-replay-mount">Replay controls</button><button id="terminal-lock" type="button">Lock terminal</button></div>
+      </section>
+      <div class="connection-line" role="status" aria-live="polite"><span id="network-state">Connecting…</span><span id="data-freshness">Awaiting market snapshot</span><span class="live-disabled">Live order routing disabled</span></div>
       <!-- Master Multi-Index Alignment Matrix & Real-Time Telemetry Bar -->
       <div id="directional-weightage-mount"></div>
 
@@ -86,7 +94,7 @@
       </nav>
 
       <!-- Active View Mount Point -->
-      <div id="content-mount"></div>
+      <div id="content-mount" tabindex="-1"></div>
     </main>
 
     <!-- Modal Mount for Candlestick Charts & Orders -->
@@ -117,6 +125,7 @@
     </button>
   </nav>
 
+  <script type="module" src="/static/js/terminal-shell.js?v=7"></script>
   <!-- ES6 Modular Application Orchestrator -->
   <script type="module" src="/static/js/app.js?v=6.0.0"></script>
 </body>

@@ -71,8 +71,8 @@ export async function renderShonyaTerminal(container) {
             <button id="btn-mode-paper" style="background: #0284c7; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s;">
               📝 PAPER
             </button>
-            <button id="btn-mode-live" style="background: transparent; color: #64748b; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s;">
-              🔥 LIVE FYERS
+            <button id="btn-mode-live" disabled aria-disabled="true" title="Live order routing is disabled in this build" style="background: transparent; color: #64748b; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s;">
+              LIVE DISABLED
             </button>
           </div>
 
@@ -508,23 +508,6 @@ function setupEventListeners(container) {
     await ApiClient.setShonyaMode('PAPER');
     await refreshShonyaData();
   });
-  document.getElementById('btn-mode-live')?.addEventListener('click', async () => {
-    const confirmLive = confirm(
-      "⚠️ WARNING: You are switching to LIVE FYERS EXECUTION MODE!\n\n" +
-      "Actual orders will be submitted to the Fyers exchange gateway with real capital.\n" +
-      "Are you sure you want to enable LIVE mode?"
-    );
-    if (confirmLive) {
-      try {
-        const res = await ApiClient.setShonyaMode('LIVE');
-        if (res?.success) {
-          await refreshShonyaData();
-        }
-      } catch (err) {
-        alert("Failed to switch to LIVE mode: " + (err.message || err));
-      }
-    }
-  });
 
   // Square Off All
   document.getElementById('btn-squareoff-all')?.addEventListener('click', async () => {
@@ -901,6 +884,7 @@ async function loadAISignalForSymbol(symbol) {
 }
 
 async function refreshShonyaData() {
+  if (document.hidden) return;
   try {
     const status = await ApiClient.fetchShonyaStatus();
     if (!status) return;

@@ -4,21 +4,23 @@
   "description": "Institutional decision support & algorithmic trading terminal for NSE index options.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#080b11",
-  "theme_color": "#0ea5e9",
+  "background_color": "#080d14",
+  "theme_color": "#0d1724",
   "orientation": "any",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2620/2620610.png",
+      "src": "/static/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2620/2620610.png",
+      "src": "/static/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "id": "/",
+  "scope": "/"
 }
