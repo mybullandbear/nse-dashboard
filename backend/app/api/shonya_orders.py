@@ -1,10 +1,11 @@
 """
 ShonyaBot Controls and Manual Order Execution Router
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 from app.intelligence.shonya_engine import shonya_engine
+from app.core.config import settings
 from app.state.market_state_store import market_state
 
 router = APIRouter(prefix="/api/shonya", tags=["shonya_orders"])
@@ -28,7 +29,12 @@ async def get_status():
 
 @router.post("/mode")
 async def set_mode(req: ModeSwitchRequest):
-    shonya_engine.mode = req.mode.upper()
+    requested = req.mode.upper()
+    if requested not in {"PAPER", "LIVE"}:
+        raise HTTPException(status_code=422, detail="Mode must be PAPER or LIVE")
+    if requested == "LIVE" and not settings.LIVE_TRADING_ENABLED:
+        raise HTTPException(status_code=403, detail="Live trading disabled by server configuration")
+    shonya_engine.mode = requested
     market_state.update_shonya_state({"mode": shonya_engine.mode})
     return {"status": "success", "mode": shonya_engine.mode}
 
