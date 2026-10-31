@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+.venv/
+venv/
+*.env
+.env
+
+# Credentials & Keys
+*credentials*.json
+fyers_config.json
+*.secret
+*.key
+
+# Backups & Archives
+*.tar.gz
+*.bak*
+app_backup_*/
+archive_benchmark_v1/
+.ua/
+
+# Database files
+*.db*
+*.sqlite*
+
+# Logs & scratch
+*.log

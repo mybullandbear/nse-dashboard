@@ -1,0 +1,54 @@
+{
+  "0": {
+    "cluster_id": 0,
+    "regime_name": "BEARISH_EXPANSION",
+    "description": "Strong bearish indicator alignment with downward pressure and Put dominance.",
+    "sample_count": 517,
+    "sample_pct": 5.87,
+    "mean_spot_ret_5m": -0.0466,
+    "mean_opt_momentum_5m": 31.72,
+    "mean_oi_imbalance": -0.0901,
+    "mean_volatility_5m": 0.0209,
+    "mean_indicator_agreement": -0.6186,
+    "mean_confluence_5m_norm": -0.4576
+  },
+  "1": {
+    "cluster_id": 1,
+    "regime_name": "SIDEWAYS_CHOP",
+    "description": "Tight range-bound consolidation with low directional momentum.",
+    "sample_count": 2298,
+    "sample_pct": 26.1,
+    "mean_spot_ret_5m": 0.0226,
+    "mean_opt_momentum_5m": -2.62,
+    "mean_oi_imbalance": -0.0838,
+    "mean_volatility_5m": 0.0162,
+    "mean_indicator_agreement": -0.0648,
+    "mean_confluence_5m_norm": -0.4817
+  },
+  "2": {
+    "cluster_id": 2,
+    "regime_name": "BEARISH_EXPANSION",
+    "description": "Strong bearish indicator alignment with downward pressure and Put dominance.",
+    "sample_count": 2882,
+    "sample_pct": 32.73,
+    "mean_spot_ret_5m": -0.058,
+    "mean_opt_momentum_5m": -3.56,
+    "mean_oi_imbalance": -0.0546,
+    "mean_volatility_5m": 0.0209,
+    "mean_indicator_agreement": -0.7522,
+    "mean_confluence_5m_norm": -0.5038
+  },
+  "3": {
+    "cluster_id": 3,
+    "regime_name": "CONFLICTING_SIGNALS",
+    "description": "Divergence between OI flows, indicator direction, and spot momentum.",
+    "sample_count": 3108,
+    "sample_pct": 35.3,
+    "mean_spot_ret_5m": 0.0313,
+    "mean_opt_momentum_5m": 0.01,
+    "mean_oi_imbalance": -0.0413,
+    "mean_volatility_5m": 0.0186,
+    "mean_indicator_agreement": 0.5803,
+    "mean_confluence_5m_norm": 0.5354
+  }
+}

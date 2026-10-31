@@ -1,0 +1,56 @@
+:root {
+  --bg-primary: #07090e;
+  --bg-secondary: #0e121b;
+  --bg-tertiary: #161c28;
+  --bg-card: rgba(18, 24, 38, 0.7);
+  --bg-card-hover: rgba(26, 34, 52, 0.85);
+
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-accent: rgba(56, 189, 248, 0.25);
+  --border-glow-green: rgba(16, 185, 129, 0.4);
+  --border-glow-red: rgba(239, 68, 68, 0.4);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --color-bullish: #10b981;
+  --color-bearish: #ef4444;
+  --color-neutral: #f59e0b;
+  --color-accent: #38bdf8;
+  --color-purple: #a855f7;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.45), inset 1px 1px 1px rgba(255, 255, 255, 0.03);
+  --shadow-glow-cyan: 0 0 20px rgba(56, 189, 248, 0.25);
+  --shadow-glow-green: 0 0 16px rgba(16, 185, 129, 0.25);
+  --shadow-glow-red: 0 0 16px rgba(239, 68, 68, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  overflow-x: hidden;
+  padding-bottom: 70px; /* Space for mobile bottom bar */
+}
+
+@media (min-width: 1024px) {
+  body {
+    padding-bottom: 20px;
+  }
+}

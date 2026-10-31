@@ -1,0 +1,1826 @@
+{
+    "Vishal Mega Mar": {
+        "nse_symbol": "VMM",
+        "sector": "FMCG"
+    },
+    "LT Foods": {
+        "nse_symbol": "LTFOODS",
+        "sector": "FMCG"
+    },
+    "Urban Company": {
+        "nse_symbol": "URBANCO",
+        "sector": "Miscellaneous"
+    },
+    "Muthoot Finance": {
+        "nse_symbol": "MUTHOOTFIN",
+        "sector": "Finance"
+    },
+    "Hexaware Tech": {
+        "nse_symbol": "HEXT",
+        "sector": "Software & IT Services"
+    },
+    "PTC Industries": {
+        "nse_symbol": "PTCIL",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Siemens": {
+        "nse_symbol": "SIEMENS",
+        "sector": "Capital Goods"
+    },
+    "Capri Global": {
+        "nse_symbol": "CGCL",
+        "sector": "Finance"
+    },
+    "HFCL": {
+        "nse_symbol": "HFCL",
+        "sector": "Telecom"
+    },
+    "Welspun Corp": {
+        "nse_symbol": "WELCORP",
+        "sector": "Metals & Mining"
+    },
+    "Redington": {
+        "nse_symbol": "REDINGTON",
+        "sector": "Trading"
+    },
+    "Zydus Wellness": {
+        "nse_symbol": "ZYDUSWELL",
+        "sector": "FMCG"
+    },
+    "Engineers India": {
+        "nse_symbol": "ENGINERSIN",
+        "sector": "Capital Goods"
+    },
+    "SAIL": {
+        "nse_symbol": "SAIL",
+        "sector": "Metals & Mining"
+    },
+    "Devyani Int": {
+        "nse_symbol": "DEVYANI",
+        "sector": "FMCG"
+    },
+    "Glenmark": {
+        "nse_symbol": "GLENMARK",
+        "sector": "Healthcare"
+    },
+    "AWL Agri": {
+        "nse_symbol": "AWL",
+        "sector": "FMCG"
+    },
+    "Sapphire Foods": {
+        "nse_symbol": "SAPPHIRE",
+        "sector": "Hospitality"
+    },
+    "MCX India": {
+        "nse_symbol": "MCX",
+        "sector": "Finance"
+    },
+    "JSW Steel": {
+        "nse_symbol": "JSWSTEEL",
+        "sector": "Metals & Mining"
+    },
+    "LG Electronics": {
+        "nse_symbol": "LGEINDIA",
+        "sector": "Consumer Durables"
+    },
+    "Hindalco": {
+        "nse_symbol": "HINDALCO",
+        "sector": "Metals & Mining"
+    },
+    "Cochin Shipyard": {
+        "nse_symbol": "COCHINSHIP",
+        "sector": "Ship Building"
+    },
+    "NALCO": {
+        "nse_symbol": "NATIONALUM",
+        "sector": "Metals & Mining"
+    },
+    "Usha Martin": {
+        "nse_symbol": "USHAMART",
+        "sector": "Metals & Mining"
+    },
+    "Cyient": {
+        "nse_symbol": "CYIENT",
+        "sector": "Software & IT Services"
+    },
+    "Tata Steel": {
+        "nse_symbol": "TATASTEEL",
+        "sector": "Metals & Mining"
+    },
+    "HEG": {
+        "nse_symbol": "HEG",
+        "sector": "Capital Goods"
+    },
+    "BLS Internation": {
+        "nse_symbol": "BLS",
+        "sector": "Hospitality"
+    },
+    "Balrampur Chini": {
+        "nse_symbol": "BALRAMCHIN",
+        "sector": "Agri"
+    },
+    "Gabriel India": {
+        "nse_symbol": "GABRIEL",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Tenneco Clean": {
+        "nse_symbol": "TENNIND",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Coromandel Int": {
+        "nse_symbol": "COROMANDEL",
+        "sector": "Chemicals"
+    },
+    "Cohance Life": {
+        "nse_symbol": "COHANCE",
+        "sector": "Healthcare"
+    },
+    "Tata Tech": {
+        "nse_symbol": "TATATECH",
+        "sector": "Diversified"
+    },
+    "Zee Entertain": {
+        "nse_symbol": "ZEEL",
+        "sector": "Media & Entertainment"
+    },
+    "Netweb": {
+        "nse_symbol": "NETWEB",
+        "sector": "Consumer Durables"
+    },
+    "Can Fin Homes": {
+        "nse_symbol": "CANFINHOME",
+        "sector": "Finance"
+    },
+    "CG Consumer": {
+        "nse_symbol": "CROMPTON",
+        "sector": "Consumer Durables"
+    },
+    "City Union Bank": {
+        "nse_symbol": "CUB",
+        "sector": "Banks"
+    },
+    "Bank of Baroda": {
+        "nse_symbol": "BANKBARODA",
+        "sector": "Banks"
+    },
+    "Syngene Intl": {
+        "nse_symbol": "SYNGENE",
+        "sector": "Healthcare"
+    },
+    "Linde India": {
+        "nse_symbol": "LINDEINDIA",
+        "sector": "Diversified"
+    },
+    "Canara Bank": {
+        "nse_symbol": "CANBK",
+        "sector": "Banks"
+    },
+    "JK Bank": {
+        "nse_symbol": "J&KBANK",
+        "sector": "Banks"
+    },
+    "JBM Auto": {
+        "nse_symbol": "JBMA",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Oracle Fin Serv": {
+        "nse_symbol": "OFSS",
+        "sector": "Software & IT Services"
+    },
+    "SBI Life Insura": {
+        "nse_symbol": "SBILIFE",
+        "sector": "Insurance"
+    },
+    "IDBI Bank": {
+        "nse_symbol": "IDBI",
+        "sector": "Banks"
+    },
+    "EID Parry": {
+        "nse_symbol": "EIDPARRY",
+        "sector": "Agri"
+    },
+    "Aarti Ind": {
+        "nse_symbol": "AARTIIND",
+        "sector": "Chemicals"
+    },
+    "Allied Blenders": {
+        "nse_symbol": "ABDL",
+        "sector": "Alcohol"
+    },
+    "Jubilant Pharmo": {
+        "nse_symbol": "JUBLPHARMA",
+        "sector": "Healthcare"
+    },
+    "Finolex Cables": {
+        "nse_symbol": "FINCABLES",
+        "sector": "Electricals"
+    },
+    "IIFL Finance": {
+        "nse_symbol": "IIFL",
+        "sector": "Finance"
+    },
+    "Narayana Hruda": {
+        "nse_symbol": "NH",
+        "sector": "Healthcare"
+    },
+    "HINDPETRO": {
+        "nse_symbol": "HINDPETRO",
+        "sector": "Oil & Gas"
+    },
+    "Brigade Ent": {
+        "nse_symbol": "BRIGADE",
+        "sector": "Real Estate"
+    },
+    "BSE Limited": {
+        "nse_symbol": "BSE",
+        "sector": "Finance"
+    },
+    "CarTrade Tech": {
+        "nse_symbol": "CARTRADE",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Manappuram Fin": {
+        "nse_symbol": "MANAPPURAM",
+        "sector": "Finance"
+    },
+    "JK Tyre Ind": {
+        "nse_symbol": "JKTYRE",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Tata Comm": {
+        "nse_symbol": "TATACOMM",
+        "sector": "Telecom"
+    },
+    "IFCI": {
+        "nse_symbol": "IFCI",
+        "sector": "Finance"
+    },
+    "IOC": {
+        "nse_symbol": "IOC",
+        "sector": "Oil & Gas"
+    },
+    "ACME Solar": {
+        "nse_symbol": "ACMESOLAR",
+        "sector": "Power"
+    },
+    "Jindal Steel": {
+        "nse_symbol": "JINDALSTEL",
+        "sector": "Metals & Mining"
+    },
+    "Rainbow Child": {
+        "nse_symbol": "RAINBOW",
+        "sector": "Healthcare"
+    },
+    "Deepak Fert": {
+        "nse_symbol": "DEEPAKFERT",
+        "sector": "Chemicals"
+    },
+    "Honasa Consumer": {
+        "nse_symbol": "HONASA",
+        "sector": "FMCG"
+    },
+    "Aegis Logistics": {
+        "nse_symbol": "AEGISLOG",
+        "sector": "Logistics"
+    },
+    "Schneider Infra": {
+        "nse_symbol": "SCHNEIDER",
+        "sector": "Capital Goods"
+    },
+    "Carborundum": {
+        "nse_symbol": "CARBORUNIV",
+        "sector": "Manufacturing"
+    },
+    "Five-Star Busin": {
+        "nse_symbol": "FIVESTAR",
+        "sector": "Finance"
+    },
+    "Godrej Ind": {
+        "nse_symbol": "GODREJIND",
+        "sector": "Chemicals"
+    },
+    "CreditAccess Gr": {
+        "nse_symbol": "CREDITACC",
+        "sector": "Finance"
+    },
+    "KPR Mill": {
+        "nse_symbol": "KPRMILL",
+        "sector": "Textiles"
+    },
+    "Poonawalla Fin": {
+        "nse_symbol": "POONAWALLA",
+        "sector": "Finance"
+    },
+    "Elecon Eng": {
+        "nse_symbol": "ELECON",
+        "sector": "Capital Goods"
+    },
+    "Caplin Labs": {
+        "nse_symbol": "CAPLIPOINT",
+        "sector": "Healthcare"
+    },
+    "C. E. Info Syst": {
+        "nse_symbol": "MAPMYINDIA",
+        "sector": "Software & IT Services"
+    },
+    "Tega Industries": {
+        "nse_symbol": "TEGA",
+        "sector": "Capital Goods"
+    },
+    "Premier Energie": {
+        "nse_symbol": "PREMIERENE",
+        "sector": "Capital Goods"
+    },
+    "Aegis Vopak": {
+        "nse_symbol": "AEGISVOPAK",
+        "sector": "Logistics"
+    },
+    "Leela Palaces": {
+        "nse_symbol": "THELEELA",
+        "sector": "Hospitality"
+    },
+    "Bata India": {
+        "nse_symbol": "BATAINDIA",
+        "sector": "Footwear"
+    },
+    "SUMITOMO": {
+        "nse_symbol": "SUMICHEM",
+        "sector": "Chemicals"
+    },
+    "Krishna Inst.": {
+        "nse_symbol": "KIMS",
+        "sector": "Healthcare"
+    },
+    "Concord Biotech": {
+        "nse_symbol": "CONCORDBIO",
+        "sector": "Healthcare"
+    },
+    "Elgi Equipments": {
+        "nse_symbol": "ELGIEQUIP",
+        "sector": "Capital Goods"
+    },
+    "Pfizer": {
+        "nse_symbol": "PFIZER",
+        "sector": "Healthcare"
+    },
+    "Data Patterns": {
+        "nse_symbol": "DATAPATTNS",
+        "sector": "Aviation"
+    },
+    "Dixon Technolog": {
+        "nse_symbol": "DIXON",
+        "sector": "Consumer Durables"
+    },
+    "Hindustan Aeron": {
+        "nse_symbol": "HAL",
+        "sector": "Aviation"
+    },
+    "Railtel": {
+        "nse_symbol": "RAILTEL",
+        "sector": "Telecom"
+    },
+    "SBFC Finance": {
+        "nse_symbol": "SBFC",
+        "sector": "Finance"
+    },
+    "Bajaj Holdings": {
+        "nse_symbol": "BAJAJHLDNG",
+        "sector": "Finance"
+    },
+    "Timken": {
+        "nse_symbol": "TIMKEN",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Neuland Lab": {
+        "nse_symbol": "NEULANDLAB",
+        "sector": "Healthcare"
+    },
+    "Berger Paints": {
+        "nse_symbol": "BERGEPAINT",
+        "sector": "Chemicals"
+    },
+    "Fert and Chem": {
+        "nse_symbol": "FACT",
+        "sector": "Chemicals"
+    },
+    "Paradeep Phosp": {
+        "nse_symbol": "PARADEEP",
+        "sector": "Chemicals"
+    },
+    "Motilal Oswal": {
+        "nse_symbol": "MOTILALOFS",
+        "sector": "Finance"
+    },
+    "Bank of Mah": {
+        "nse_symbol": "MAHABANK",
+        "sector": "Banks"
+    },
+    "Vodafone Idea": {
+        "nse_symbol": "IDEA",
+        "sector": "Telecom"
+    },
+    "Chambal Fert": {
+        "nse_symbol": "CHAMBLFERT",
+        "sector": "Chemicals"
+    },
+    "INDUS TOWERS": {
+        "nse_symbol": "INDUSTOWER",
+        "sector": "Telecom"
+    },
+    "Authum Invest": {
+        "nse_symbol": "AIIL",
+        "sector": "Finance"
+    },
+    "GE Shipping": {
+        "nse_symbol": "GESHIP",
+        "sector": "Logistics"
+    },
+    "Jyoti CNC Auto": {
+        "nse_symbol": "JYOTICNC",
+        "sector": "Miscellaneous"
+    },
+    "Karur Vysya": {
+        "nse_symbol": "KARURVYSYA",
+        "sector": "Banks"
+    },
+    "BEML": {
+        "nse_symbol": "BEML",
+        "sector": "Capital Goods"
+    },
+    "Deepak Nitrite": {
+        "nse_symbol": "DEEPAKNTR",
+        "sector": "Chemicals"
+    },
+    "Afcons Infra": {
+        "nse_symbol": "AFCONS",
+        "sector": "Infrastructure"
+    },
+    "Apar Ind": {
+        "nse_symbol": "APARINDS",
+        "sector": "Capital Goods"
+    },
+    "New India Assur": {
+        "nse_symbol": "NIACL",
+        "sector": "Insurance"
+    },
+    "Max Financial": {
+        "nse_symbol": "MFSL",
+        "sector": "Finance"
+    },
+    "PVR INOX": {
+        "nse_symbol": "PVRINOX",
+        "sector": "Media & Entertainment"
+    },
+    "Billionbrains G": {
+        "nse_symbol": "GROWW",
+        "sector": "Finance"
+    },
+    "Shipping Corp": {
+        "nse_symbol": "SCI",
+        "sector": "Logistics"
+    },
+    "JM Financial": {
+        "nse_symbol": "JMFINANCIL",
+        "sector": "Finance"
+    },
+    "TataTeleservice": {
+        "nse_symbol": "TTML",
+        "sector": "Telecom"
+    },
+    "Bharat Dynamics": {
+        "nse_symbol": "BDL",
+        "sector": "Aviation"
+    },
+    "Ircon Internati": {
+        "nse_symbol": "IRCON",
+        "sector": "Infrastructure"
+    },
+    "UCO Bank": {
+        "nse_symbol": "UCOBANK",
+        "sector": "Banks"
+    },
+    "Sagility": {
+        "nse_symbol": "SAGILITY",
+        "sector": "Miscellaneous"
+    },
+    "AU Small Financ": {
+        "nse_symbol": "AUBANK",
+        "sector": "Banks"
+    },
+    "LIC India": {
+        "nse_symbol": "LICI",
+        "sector": "Insurance"
+    },
+    "CCL Products": {
+        "nse_symbol": "CCL",
+        "sector": "Agri"
+    },
+    "Tata Motors Com": {
+        "nse_symbol": "TMCV",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Kalyan Jeweller": {
+        "nse_symbol": "KALYANKJIL",
+        "sector": "Diamond  &  Jewellery"
+    },
+    "KEI Industries": {
+        "nse_symbol": "KEI",
+        "sector": "Electricals"
+    },
+    "Kaynes Tech": {
+        "nse_symbol": "KAYNES",
+        "sector": "Electricals"
+    },
+    "Bank of India": {
+        "nse_symbol": "BANKINDIA",
+        "sector": "Banks"
+    },
+    "Indian Bank": {
+        "nse_symbol": "INDIANB",
+        "sector": "Banks"
+    },
+    "Hind Copper": {
+        "nse_symbol": "HINDCOPPER",
+        "sector": "Metals & Mining"
+    },
+    "GE Vernova TD": {
+        "nse_symbol": "GVT&D",
+        "sector": "Capital Goods"
+    },
+    "Motherson SWI": {
+        "nse_symbol": "MSUMI",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Hitachi Energy": {
+        "nse_symbol": "POWERINDIA",
+        "sector": "Capital Goods"
+    },
+    "Affle": {
+        "nse_symbol": "AFFLE",
+        "sector": "Software & IT Services"
+    },
+    "Hind Zinc": {
+        "nse_symbol": "HINDZINC",
+        "sector": "Metals & Mining"
+    },
+    "Natco Pharma": {
+        "nse_symbol": "NATCOPHARM",
+        "sector": "Healthcare"
+    },
+    "Reliance Power": {
+        "nse_symbol": "RPOWER",
+        "sector": "Power"
+    },
+    "Ajanta Pharma": {
+        "nse_symbol": "AJANTPHARM",
+        "sector": "Healthcare"
+    },
+    "Dalmia Bharat": {
+        "nse_symbol": "DALBHARAT",
+        "sector": "Construction Materials"
+    },
+    "Piramal Pharma": {
+        "nse_symbol": "PPLPHARMA",
+        "sector": "Healthcare"
+    },
+    "MOTHERSON": {
+        "nse_symbol": "MOTHERSON",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Aditya Infotech": {
+        "nse_symbol": "CPPLUS",
+        "sector": "Diversified"
+    },
+    "Siemens Energy": {
+        "nse_symbol": "ENRIN",
+        "sector": "Capital Goods"
+    },
+    "DLF": {
+        "nse_symbol": "DLF",
+        "sector": "Real Estate"
+    },
+    "Vijaya Diagnost": {
+        "nse_symbol": "VIJAYA",
+        "sector": "Healthcare"
+    },
+    "HCL Tech": {
+        "nse_symbol": "HCLTECH",
+        "sector": "Software & IT Services"
+    },
+    "Jain Resource": {
+        "nse_symbol": "JAINREC",
+        "sector": "Metals & Mining"
+    },
+    "Birlasoft": {
+        "nse_symbol": "BSOFT",
+        "sector": "Software & IT Services"
+    },
+    "Wockhardt": {
+        "nse_symbol": "WOCKPHARMA",
+        "sector": "Healthcare"
+    },
+    "Escorts Kubota": {
+        "nse_symbol": "ESCORTS",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Petronet LNG": {
+        "nse_symbol": "PETRONET",
+        "sector": "Oil & Gas"
+    },
+    "AAVAS Financier": {
+        "nse_symbol": "AAVAS",
+        "sector": "Finance"
+    },
+    "TMPV": {
+        "nse_symbol": "TMPV",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Ramco Cements": {
+        "nse_symbol": "RAMCOCEM",
+        "sector": "Construction Materials"
+    },
+    "Jubilant Ing.": {
+        "nse_symbol": "JUBLINGREA",
+        "sector": "Chemicals"
+    },
+    "360 ONE WAM": {
+        "nse_symbol": "360ONE",
+        "sector": "Finance"
+    },
+    "Divis Labs": {
+        "nse_symbol": "DIVISLAB",
+        "sector": "Healthcare"
+    },
+    "Balkrishna Ind": {
+        "nse_symbol": "BALKRISIND",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Home First": {
+        "nse_symbol": "HOMEFIRST",
+        "sector": "Finance"
+    },
+    "Asahi India": {
+        "nse_symbol": "ASAHIINDIA",
+        "sector": "Construction Materials"
+    },
+    "Fortis Health": {
+        "nse_symbol": "FORTIS",
+        "sector": "Healthcare"
+    },
+    "Persistent": {
+        "nse_symbol": "PERSISTENT",
+        "sector": "Software & IT Services"
+    },
+    "Cipla": {
+        "nse_symbol": "CIPLA",
+        "sector": "Healthcare"
+    },
+    "Ceat": {
+        "nse_symbol": "CEATLTD",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Angel One": {
+        "nse_symbol": "ANGELONE",
+        "sector": "Finance"
+    },
+    "Mazagon Dock": {
+        "nse_symbol": "MAZDOCK",
+        "sector": "Ship Building"
+    },
+    "Swiggy": {
+        "nse_symbol": "SWIGGY",
+        "sector": "Software & IT Services"
+    },
+    "eClerx Services": {
+        "nse_symbol": "ECLERX",
+        "sector": "Software & IT Services"
+    },
+    "LIC Housing Fin": {
+        "nse_symbol": "LICHSGFIN",
+        "sector": "Finance"
+    },
+    "UPL": {
+        "nse_symbol": "UPL",
+        "sector": "Chemicals"
+    },
+    "Prestige Estate": {
+        "nse_symbol": "PRESTIGE",
+        "sector": "Real Estate"
+    },
+    "Lodha Developer": {
+        "nse_symbol": "LODHA",
+        "sector": "Real Estate"
+    },
+    "Tech Mahindra": {
+        "nse_symbol": "TECHM",
+        "sector": "Software & IT Services"
+    },
+    "One 97 Paytm": {
+        "nse_symbol": "PAYTM",
+        "sector": "Software & IT Services"
+    },
+    "RHI Magnesita": {
+        "nse_symbol": "RHIM",
+        "sector": "Capital Goods"
+    },
+    "Info Edge": {
+        "nse_symbol": "NAUKRI",
+        "sector": "Miscellaneous"
+    },
+    "Cemindia Proj": {
+        "nse_symbol": "CEMPRO",
+        "sector": "Infrastructure"
+    },
+    "Tube Investment": {
+        "nse_symbol": "TIINDIA",
+        "sector": "Automobile & Ancillaries"
+    },
+    "TBO Tek": {
+        "nse_symbol": "TBOTEK",
+        "sector": "Hospitality"
+    },
+    "Graphite India": {
+        "nse_symbol": "GRAPHITE",
+        "sector": "Capital Goods"
+    },
+    "Go Digit": {
+        "nse_symbol": "GODIGIT",
+        "sector": "Insurance"
+    },
+    "Vedanta": {
+        "nse_symbol": "VEDL",
+        "sector": "Metals & Mining"
+    },
+    "Godfrey Phillip": {
+        "nse_symbol": "GODFRYPHLP",
+        "sector": "FMCG"
+    },
+    "Laurus Labs": {
+        "nse_symbol": "LAURUSLABS",
+        "sector": "Healthcare"
+    },
+    "ITC Hotels": {
+        "nse_symbol": "ITCHOTELS",
+        "sector": "Hospitality"
+    },
+    "Star Health": {
+        "nse_symbol": "STARHEALTH",
+        "sector": "Diversified"
+    },
+    "United Brewerie": {
+        "nse_symbol": "UBL",
+        "sector": "Alcohol"
+    },
+    "Zen Tech": {
+        "nse_symbol": "ZENTEC",
+        "sector": "Miscellaneous"
+    },
+    "Jubilant Food": {
+        "nse_symbol": "JUBLFOOD",
+        "sector": "FMCG"
+    },
+    "MM Financial": {
+        "nse_symbol": "M&MFIN",
+        "sector": "Finance"
+    },
+    "Havells India": {
+        "nse_symbol": "HAVELLS",
+        "sector": "Capital Goods"
+    },
+    "NAVA": {
+        "nse_symbol": "NAVA",
+        "sector": "Power"
+    },
+    "Aster DM Qua": {
+        "nse_symbol": "ASTERDM",
+        "sector": "Healthcare"
+    },
+    "Adani Energy": {
+        "nse_symbol": "ADANIENSOL",
+        "sector": "Power"
+    },
+    "DCM Shriram": {
+        "nse_symbol": "DCMSHRIRAM",
+        "sector": "Diversified"
+    },
+    "Vardhman Text": {
+        "nse_symbol": "VTL",
+        "sector": "Textiles"
+    },
+    "R R Kabel": {
+        "nse_symbol": "RRKABEL",
+        "sector": "Electricals"
+    },
+    "Force Motors": {
+        "nse_symbol": "FORCEMOT",
+        "sector": "Automobile & Ancillaries"
+    },
+    "CDSL": {
+        "nse_symbol": "CDSL",
+        "sector": "Finance"
+    },
+    "Chalet Hotels": {
+        "nse_symbol": "CHALET",
+        "sector": "Hospitality"
+    },
+    "Varun Beverages": {
+        "nse_symbol": "VBL",
+        "sector": "FMCG"
+    },
+    "L&T Finance": {
+        "nse_symbol": "LTF",
+        "sector": "Finance"
+    },
+    "Aadhar Housing": {
+        "nse_symbol": "AADHARHFC",
+        "sector": "Finance"
+    },
+    "Pine Labs": {
+        "nse_symbol": "PINELABS",
+        "sector": "Finance"
+    },
+    "PB Fintech": {
+        "nse_symbol": "POLICYBZR",
+        "sector": "Insurance"
+    },
+    "Mankind Pharma": {
+        "nse_symbol": "MANKIND",
+        "sector": "Healthcare"
+    },
+    "Hero Motocorp": {
+        "nse_symbol": "HEROMOTOCO",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Ipca Labs": {
+        "nse_symbol": "IPCALAB",
+        "sector": "Healthcare"
+    },
+    "Jindal Saw": {
+        "nse_symbol": "JINDALSAW",
+        "sector": "Metals & Mining"
+    },
+    "Nippon": {
+        "nse_symbol": "NAM-INDIA",
+        "sector": "Finance"
+    },
+    "KPIL": {
+        "nse_symbol": "KPIL",
+        "sector": "Infrastructure"
+    },
+    "Sonata": {
+        "nse_symbol": "SONATSOFTW",
+        "sector": "Software & IT Services"
+    },
+    "Minda Corp": {
+        "nse_symbol": "MINDACORP",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Nuvama Wealth": {
+        "nse_symbol": "NUVAMA",
+        "sector": "Finance"
+    },
+    "Union Bank": {
+        "nse_symbol": "UNIONBANK",
+        "sector": "Banks"
+    },
+    "Indian Renew": {
+        "nse_symbol": "IREDA",
+        "sector": "Power"
+    },
+    "Adani Enterpris": {
+        "nse_symbol": "ADANIENT",
+        "sector": "Trading"
+    },
+    "Kirloskar Oil": {
+        "nse_symbol": "KIRLOSENG",
+        "sector": "Capital Goods"
+    },
+    "ZFCVINDIA": {
+        "nse_symbol": "ZFCVINDIA",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Acutaas Chem": {
+        "nse_symbol": "ACUTAAS",
+        "sector": "Chemicals"
+    },
+    "Rail Vikas": {
+        "nse_symbol": "RVNL",
+        "sector": "Infrastructure"
+    },
+    "Biocon": {
+        "nse_symbol": "BIOCON",
+        "sector": "Healthcare"
+    },
+    "CESC": {
+        "nse_symbol": "CESC",
+        "sector": "Power"
+    },
+    "Federal Bank": {
+        "nse_symbol": "FEDERALBNK",
+        "sector": "Banks"
+    },
+    "Craftsman": {
+        "nse_symbol": "CRAFTSMAN",
+        "sector": "Capital Goods"
+    },
+    "Triveni Turbine": {
+        "nse_symbol": "TRITURBINE",
+        "sector": "Capital Goods"
+    },
+    "Tata Elxsi": {
+        "nse_symbol": "TATAELXSI",
+        "sector": "Software & IT Services"
+    },
+    "Grasim": {
+        "nse_symbol": "GRASIM",
+        "sector": "Diversified"
+    },
+    "Dabur India": {
+        "nse_symbol": "DABUR",
+        "sector": "FMCG"
+    },
+    "Eternal": {
+        "nse_symbol": "ETERNAL",
+        "sector": "Software & IT Services"
+    },
+    "RITES": {
+        "nse_symbol": "RITES",
+        "sector": "Infrastructure"
+    },
+    "Meesho": {
+        "nse_symbol": "MEESHO",
+        "sector": "Retailing"
+    },
+    "Suzlon Energy": {
+        "nse_symbol": "SUZLON",
+        "sector": "Capital Goods"
+    },
+    "Tejas Networks": {
+        "nse_symbol": "TEJASNET",
+        "sector": "Telecom"
+    },
+    "Lenskart Solu": {
+        "nse_symbol": "LENSKART",
+        "sector": "Retailing"
+    },
+    "Transformers": {
+        "nse_symbol": "TARIL",
+        "sector": "Capital Goods"
+    },
+    "HDFC AMC": {
+        "nse_symbol": "HDFCAMC",
+        "sector": "Finance"
+    },
+    "JSW Cement": {
+        "nse_symbol": "JSWCEMENT",
+        "sector": "Construction Materials"
+    },
+    "FSN E-Co Nykaa": {
+        "nse_symbol": "NYKAA",
+        "sector": "Software & IT Services"
+    },
+    "Kajaria Ceramic": {
+        "nse_symbol": "KAJARIACER",
+        "sector": "Construction Materials"
+    },
+    "Ola Electric": {
+        "nse_symbol": "OLAELEC",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Emmvee Photovol": {
+        "nse_symbol": "EMMVEE",
+        "sector": "Miscellaneous"
+    },
+    "Oil India": {
+        "nse_symbol": "OIL",
+        "sector": "Oil & Gas"
+    },
+    "Shyam Metalics": {
+        "nse_symbol": "SHYAMMETL",
+        "sector": "Metals & Mining"
+    },
+    "Firstsource Sol": {
+        "nse_symbol": "FSL",
+        "sector": "Software & IT Services"
+    },
+    "Aditya Birla Re": {
+        "nse_symbol": "ABREL",
+        "sector": "Real Estate"
+    },
+    "Adani Green Ene": {
+        "nse_symbol": "ADANIGREEN",
+        "sector": "Miscellaneous"
+    },
+    "Newgen Software": {
+        "nse_symbol": "NEWGEN",
+        "sector": "Software & IT Services"
+    },
+    "Dr Lal PathLab": {
+        "nse_symbol": "LALPATHLAB",
+        "sector": "Healthcare"
+    },
+    "Bayer CropScien": {
+        "nse_symbol": "BAYERCROP",
+        "sector": "Chemicals"
+    },
+    "BPCL": {
+        "nse_symbol": "BPCL",
+        "sector": "Oil & Gas"
+    },
+    "AB Capital": {
+        "nse_symbol": "ABCAPITAL",
+        "sector": "Finance"
+    },
+    "APTUS VALUE": {
+        "nse_symbol": "APTUS",
+        "sector": "Finance"
+    },
+    "EIH": {
+        "nse_symbol": "EIHOTEL",
+        "sector": "Hospitality"
+    },
+    "RBL Bank": {
+        "nse_symbol": "RBLBANK",
+        "sector": "Banks"
+    },
+    "Physicswallah": {
+        "nse_symbol": "PWL",
+        "sector": "Miscellaneous"
+    },
+    "Supreme Petro": {
+        "nse_symbol": "SPLPETRO",
+        "sector": "Chemicals"
+    },
+    "Shree Cements": {
+        "nse_symbol": "SHREECEM",
+        "sector": "Construction Materials"
+    },
+    "Max Healthcare": {
+        "nse_symbol": "MAXHEALTH",
+        "sector": "Healthcare"
+    },
+    "Mahanagar Gas": {
+        "nse_symbol": "MGL",
+        "sector": "Industrial Gases & Fuels"
+    },
+    "General Insuran": {
+        "nse_symbol": "GICRE",
+        "sector": "Insurance"
+    },
+    "Central Bank": {
+        "nse_symbol": "CENTRALBK",
+        "sector": "Banks"
+    },
+    "Atul": {
+        "nse_symbol": "ATUL",
+        "sector": "Chemicals"
+    },
+    "Apollo Hospital": {
+        "nse_symbol": "APOLLOHOSP",
+        "sector": "Healthcare"
+    },
+    "Shriram Finance": {
+        "nse_symbol": "SHRIRAMFIN",
+        "sector": "Finance"
+    },
+    "Canara HSBC": {
+        "nse_symbol": "CANHLIFE",
+        "sector": "Insurance"
+    },
+    "Interglobe Avi": {
+        "nse_symbol": "INDIGO",
+        "sector": "Aviation"
+    },
+    "Zydus Life": {
+        "nse_symbol": "ZYDUSLIFE",
+        "sector": "Healthcare"
+    },
+    "MRF": {
+        "nse_symbol": "MRF",
+        "sector": "Automobile & Ancillaries"
+    },
+    "ICICIAMC": {
+        "nse_symbol": "ICICIAMC",
+        "sector": "Finance"
+    },
+    "GlaxoSmithKline": {
+        "nse_symbol": "GLAXO",
+        "sector": "Healthcare"
+    },
+    "Anthem Bioscien": {
+        "nse_symbol": "ANTHEM",
+        "sector": "Healthcare"
+    },
+    "Global Health": {
+        "nse_symbol": "MEDANTA",
+        "sector": "Healthcare"
+    },
+    "Kotak Mahindra": {
+        "nse_symbol": "KOTAKBANK",
+        "sector": "Banks"
+    },
+    "NMDC Steel": {
+        "nse_symbol": "NSLNISP",
+        "sector": "Metals & Mining"
+    },
+    "IRB Infra": {
+        "nse_symbol": "IRB",
+        "sector": "Infrastructure"
+    },
+    "ABSL AMC": {
+        "nse_symbol": "ABSLAMC",
+        "sector": "Finance"
+    },
+    "NMDC": {
+        "nse_symbol": "NMDC",
+        "sector": "Metals & Mining"
+    },
+    "Gujarat Fluoro": {
+        "nse_symbol": "FLUOROCHEM",
+        "sector": "Chemicals"
+    },
+    "Olectra Greente": {
+        "nse_symbol": "OLECTRA",
+        "sector": "Electricals"
+    },
+    "Ashok Leyland": {
+        "nse_symbol": "ASHOKLEY",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Bikaji Foods": {
+        "nse_symbol": "BIKAJI",
+        "sector": "FMCG"
+    },
+    "Ather Energy": {
+        "nse_symbol": "ATHERENERG",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Inventurus Know": {
+        "nse_symbol": "IKS",
+        "sector": "Software & IT Services"
+    },
+    "Avenue Supermar": {
+        "nse_symbol": "DMART",
+        "sector": "Retailing"
+    },
+    "Latent View": {
+        "nse_symbol": "LATENTVIEW",
+        "sector": "Software & IT Services"
+    },
+    "OneSource Spec": {
+        "nse_symbol": "ONESOURCE",
+        "sector": "Healthcare"
+    },
+    "Bharat Forge": {
+        "nse_symbol": "BHARATFORG",
+        "sector": "Metals & Mining"
+    },
+    "Granules India": {
+        "nse_symbol": "GRANULES",
+        "sector": "Healthcare"
+    },
+    "Infosys": {
+        "nse_symbol": "INFY",
+        "sector": "Software & IT Services"
+    },
+    "IEX": {
+        "nse_symbol": "IEX",
+        "sector": "Power"
+    },
+    "Marico": {
+        "nse_symbol": "MARICO",
+        "sector": "FMCG"
+    },
+    "Voltas": {
+        "nse_symbol": "VOLTAS",
+        "sector": "Consumer Durables"
+    },
+    "Chennai Petro": {
+        "nse_symbol": "CHENNPETRO",
+        "sector": "Oil & Gas"
+    },
+    "United Spirits": {
+        "nse_symbol": "UNITDSPR",
+        "sector": "Alcohol"
+    },
+    "Power Grid Corp": {
+        "nse_symbol": "POWERGRID",
+        "sector": "Power"
+    },
+    "Bharti Airtel": {
+        "nse_symbol": "BHARTIARTL",
+        "sector": "Telecom"
+    },
+    "Larsen": {
+        "nse_symbol": "LT",
+        "sector": "Infrastructure"
+    },
+    "Nestle": {
+        "nse_symbol": "NESTLEIND",
+        "sector": "FMCG"
+    },
+    "IndusInd Bank": {
+        "nse_symbol": "INDUSINDBK",
+        "sector": "Banks"
+    },
+    "Tata Power": {
+        "nse_symbol": "TATAPOWER",
+        "sector": "Power"
+    },
+    "Wipro": {
+        "nse_symbol": "WIPRO",
+        "sector": "Software & IT Services"
+    },
+    "HBL Eng": {
+        "nse_symbol": "HBLENGINE",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Navin Fluorine": {
+        "nse_symbol": "NAVINFLUOR",
+        "sector": "Chemicals"
+    },
+    "Gland": {
+        "nse_symbol": "GLAND",
+        "sector": "Healthcare"
+    },
+    "SignatureGlobal": {
+        "nse_symbol": "SIGNATURE",
+        "sector": "Real Estate"
+    },
+    "Blue Star": {
+        "nse_symbol": "BLUESTARCO",
+        "sector": "Consumer Durables"
+    },
+    "ICICI Lombard": {
+        "nse_symbol": "ICICIGI",
+        "sector": "Insurance"
+    },
+    "India Cements": {
+        "nse_symbol": "INDIACEM",
+        "sector": "Construction Materials"
+    },
+    "Bajaj Auto": {
+        "nse_symbol": "BAJAJ-AUTO",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Saregama India": {
+        "nse_symbol": "SAREGAMA",
+        "sector": "Media & Entertainment"
+    },
+    "Power Finance": {
+        "nse_symbol": "PFC",
+        "sector": "Finance"
+    },
+    "TVS Motor": {
+        "nse_symbol": "TVSMOTOR",
+        "sector": "Automobile & Ancillaries"
+    },
+    "GMDC": {
+        "nse_symbol": "GMDCLTD",
+        "sector": "Metals & Mining"
+    },
+    "Patanjali Foods": {
+        "nse_symbol": "PATANJALI",
+        "sector": "Agri"
+    },
+    "Bombay Burmah": {
+        "nse_symbol": "BBTC",
+        "sector": "Agri"
+    },
+    "CG Power": {
+        "nse_symbol": "CGPOWER",
+        "sector": "Capital Goods"
+    },
+    "Bajaj Finance": {
+        "nse_symbol": "BAJFINANCE",
+        "sector": "Finance"
+    },
+    "BHEL": {
+        "nse_symbol": "BHEL",
+        "sector": "Capital Goods"
+    },
+    "TITAGARH": {
+        "nse_symbol": "TITAGARH",
+        "sector": "Manufacturing"
+    },
+    "SRF": {
+        "nse_symbol": "SRF",
+        "sector": "Diversified"
+    },
+    "PG Electroplast": {
+        "nse_symbol": "PGEL",
+        "sector": "Consumer Durables"
+    },
+    "COFORGE": {
+        "nse_symbol": "COFORGE",
+        "sector": "Software & IT Services"
+    },
+    "Tata Capital": {
+        "nse_symbol": "TATACAP",
+        "sector": "Finance"
+    },
+    "AIA Engineering": {
+        "nse_symbol": "AIAENG",
+        "sector": "Capital Goods"
+    },
+    "Lupin": {
+        "nse_symbol": "LUPIN",
+        "sector": "Healthcare"
+    },
+    "NHPC": {
+        "nse_symbol": "NHPC",
+        "sector": "Power"
+    },
+    "HDFC Bank": {
+        "nse_symbol": "HDFCBANK",
+        "sector": "Banks"
+    },
+    "Chola Fin Hold": {
+        "nse_symbol": "CHOLAHLDNG",
+        "sector": "Finance"
+    },
+    "SJVN": {
+        "nse_symbol": "SJVN",
+        "sector": "Power"
+    },
+    "Emami": {
+        "nse_symbol": "EMAMILTD",
+        "sector": "FMCG"
+    },
+    "Endurance Techn": {
+        "nse_symbol": "ENDURANCE",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Supreme Ind": {
+        "nse_symbol": "SUPREMEIND",
+        "sector": "Plastic Products"
+    },
+    "Emcure Pharmace": {
+        "nse_symbol": "EMCURE",
+        "sector": "Healthcare"
+    },
+    "LTM": {
+        "nse_symbol": "LTM",
+        "sector": "Software & IT Services"
+    },
+    "Himadri Special": {
+        "nse_symbol": "HSCL",
+        "sector": "Chemicals"
+    },
+    "Torrent Power": {
+        "nse_symbol": "TORNTPOWER",
+        "sector": "Power"
+    },
+    "APL Apollo": {
+        "nse_symbol": "APLAPOLLO",
+        "sector": "Metals & Mining"
+    },
+    "Page Industries": {
+        "nse_symbol": "PAGEIND",
+        "sector": "Textiles"
+    },
+    "Hyundai Motor": {
+        "nse_symbol": "HYUNDAI",
+        "sector": "Automobile & Ancillaries"
+    },
+    "MRPL": {
+        "nse_symbol": "MRPL",
+        "sector": "Oil & Gas"
+    },
+    "Travel Food Ser": {
+        "nse_symbol": "TRAVELFOOD",
+        "sector": "Hospitality"
+    },
+    "Clean Science": {
+        "nse_symbol": "CLEAN",
+        "sector": "Chemicals"
+    },
+    "Sona BLW": {
+        "nse_symbol": "SONACOMS",
+        "sector": "Automobile & Ancillaries"
+    },
+    "CRISIL": {
+        "nse_symbol": "CRISIL",
+        "sector": "Miscellaneous"
+    },
+    "Solar Ind": {
+        "nse_symbol": "SOLARINDS",
+        "sector": "Chemicals"
+    },
+    "Jindal Stainles": {
+        "nse_symbol": "JSL",
+        "sector": "Metals & Mining"
+    },
+    "Welspun Living": {
+        "nse_symbol": "WELSPUNLIV",
+        "sector": "Textiles"
+    },
+    "Amber Enterpris": {
+        "nse_symbol": "AMBER",
+        "sector": "Consumer Durables"
+    },
+    "Bandhan Bank": {
+        "nse_symbol": "BANDHANBNK",
+        "sector": "Banks"
+    },
+    "Exide Ind": {
+        "nse_symbol": "EXIDEIND",
+        "sector": "Automobile & Ancillaries"
+    },
+    "IGIL": {
+        "nse_symbol": "IGIL",
+        "sector": "Diamond  &  Jewellery"
+    },
+    "Amara Raja": {
+        "nse_symbol": "ARE&M",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Thermax": {
+        "nse_symbol": "THERMAX",
+        "sector": "Capital Goods"
+    },
+    "JSW Infra": {
+        "nse_symbol": "JSWINFRA",
+        "sector": "Infrastructure"
+    },
+    "Adani Power": {
+        "nse_symbol": "ADANIPOWER",
+        "sector": "Power"
+    },
+    "Bharat Elec": {
+        "nse_symbol": "BEL",
+        "sector": "Aviation"
+    },
+    "KFin Tech": {
+        "nse_symbol": "KFINTECH",
+        "sector": "Finance"
+    },
+    "Indiamart Inter": {
+        "nse_symbol": "INDIAMART",
+        "sector": "Retailing"
+    },
+    "Astral Ltd": {
+        "nse_symbol": "ASTRAL",
+        "sector": "Plastic Products"
+    },
+    "NCC": {
+        "nse_symbol": "NCC",
+        "sector": "Infrastructure"
+    },
+    "Delhivery": {
+        "nse_symbol": "DELHIVERY",
+        "sector": "Logistics"
+    },
+    "Siemens Energy ": {
+        "nse_symbol": "ENRIN",
+        "sector": "Capital Goods"
+    },
+    "Jupiter Wagons": {
+        "nse_symbol": "JWL",
+        "sector": "Automobile & Ancillaries"
+    },
+    "DOMS Industries": {
+        "nse_symbol": "DOMS",
+        "sector": "Miscellaneous"
+    },
+    "Sundaram Fin": {
+        "nse_symbol": "SUNDARMFIN",
+        "sector": "Finance"
+    },
+    "Schaeffler Ind": {
+        "nse_symbol": "SCHAEFFLER",
+        "sector": "Automobile & Ancillaries"
+    },
+    "JSW Energy": {
+        "nse_symbol": "JSWENERGY",
+        "sector": "Power"
+    },
+    "Inox Wind": {
+        "nse_symbol": "INOXWIND",
+        "sector": "Capital Goods"
+    },
+    "REC": {
+        "nse_symbol": "RECLTD",
+        "sector": "Finance"
+    },
+    "Zensar Tech": {
+        "nse_symbol": "ZENSARTECH",
+        "sector": "Software & IT Services"
+    },
+    "NTPC": {
+        "nse_symbol": "NTPC",
+        "sector": "Power"
+    },
+    "Godrej Prop": {
+        "nse_symbol": "GODREJPROP",
+        "sector": "Real Estate"
+    },
+    "Garden Reach Sh": {
+        "nse_symbol": "GRSE",
+        "sector": "Ship Building"
+    },
+    "Bajaj Housing": {
+        "nse_symbol": "BAJAJHFL",
+        "sector": "Finance"
+    },
+    "RamkrishnaForge": {
+        "nse_symbol": "RKFORGE",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Polycab": {
+        "nse_symbol": "POLYCAB",
+        "sector": "Electricals"
+    },
+    "Poly Medicure": {
+        "nse_symbol": "POLYMED",
+        "sector": "Healthcare"
+    },
+    "Whirlpool": {
+        "nse_symbol": "WHIRLPOOL",
+        "sector": "Consumer Durables"
+    },
+    "Nuvoco Vistas": {
+        "nse_symbol": "NUVOCO",
+        "sector": "Construction Materials"
+    },
+    "Eris Life": {
+        "nse_symbol": "ERIS",
+        "sector": "Healthcare"
+    },
+    "UNO Minda": {
+        "nse_symbol": "UNOMINDA",
+        "sector": "Automobile & Ancillaries"
+    },
+    "GAIL": {
+        "nse_symbol": "GAIL",
+        "sector": "Industrial Gases & Fuels"
+    },
+    "Radico Khaitan": {
+        "nse_symbol": "RADICO",
+        "sector": "Alcohol"
+    },
+    "Container Corp": {
+        "nse_symbol": "CONCOR",
+        "sector": "Logistics"
+    },
+    "TCS": {
+        "nse_symbol": "TCS",
+        "sector": "Software & IT Services"
+    },
+    "Apollo Tyres": {
+        "nse_symbol": "APOLLOTYRE",
+        "sector": "Automobile & Ancillaries"
+    },
+    "PNB": {
+        "nse_symbol": "PNB",
+        "sector": "Banks"
+    },
+    "KPIT Tech": {
+        "nse_symbol": "KPITTECH",
+        "sector": "Software & IT Services"
+    },
+    "Anand Rathi": {
+        "nse_symbol": "ANANDRATHI",
+        "sector": "Finance"
+    },
+    "Lemon Tree": {
+        "nse_symbol": "LEMONTREE",
+        "sector": "Hospitality"
+    },
+    "Aurobindo Pharm": {
+        "nse_symbol": "AUROPHARMA",
+        "sector": "Healthcare"
+    },
+    "Bajaj Finserv": {
+        "nse_symbol": "BAJAJFINSV",
+        "sector": "Finance"
+    },
+    "PNB Housing Fin": {
+        "nse_symbol": "PNBHOUSING",
+        "sector": "Finance"
+    },
+    "Godrej Consumer": {
+        "nse_symbol": "GODREJCP",
+        "sector": "FMCG"
+    },
+    "Oberoi Realty": {
+        "nse_symbol": "OBEROIRLTY",
+        "sector": "Real Estate"
+    },
+    "MphasiS": {
+        "nse_symbol": "MPHASIS",
+        "sector": "Software & IT Services"
+    },
+    "Indian Hotels": {
+        "nse_symbol": "INDHOTEL",
+        "sector": "Hospitality"
+    },
+    "J. K. Cement": {
+        "nse_symbol": "JKCEMENT",
+        "sector": "Construction Materials"
+    },
+    "Godawari Power": {
+        "nse_symbol": "GPIL",
+        "sector": "Metals & Mining"
+    },
+    "Bharti Hexacom": {
+        "nse_symbol": "BHARTIHEXA",
+        "sector": "Telecom"
+    },
+    "Adani Total Gas": {
+        "nse_symbol": "ATGL",
+        "sector": "Industrial Gases & Fuels"
+    },
+    "Cummins": {
+        "nse_symbol": "CUMMINSIND",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Belrise Ind": {
+        "nse_symbol": "BELRISE",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Intellect Desig": {
+        "nse_symbol": "INTELLECT",
+        "sector": "Software & IT Services"
+    },
+    "Sun TV Network": {
+        "nse_symbol": "SUNTV",
+        "sector": "Media & Entertainment"
+    },
+    "IDFC First Bank": {
+        "nse_symbol": "IDFCFIRSTB",
+        "sector": "Banks"
+    },
+    "ITI": {
+        "nse_symbol": "ITI",
+        "sector": "Telecom"
+    },
+    "Brainbees Solu": {
+        "nse_symbol": "FIRSTCRY",
+        "sector": "Trading"
+    },
+    "Tata Chemicals": {
+        "nse_symbol": "TATACHEM",
+        "sector": "Chemicals"
+    },
+    "Syrma SGS": {
+        "nse_symbol": "SYRMA",
+        "sector": "Capital Goods"
+    },
+    "UltraTechCement": {
+        "nse_symbol": "ULTRACEMCO",
+        "sector": "Construction Materials"
+    },
+    "Indegene": {
+        "nse_symbol": "INDGN",
+        "sector": "Healthcare"
+    },
+    "Techno Electric": {
+        "nse_symbol": "TECHNOE",
+        "sector": "Infrastructure"
+    },
+    "Piramal Finance": {
+        "nse_symbol": "PIRAMALFIN",
+        "sector": "Finance"
+    },
+    "Aditya Birla F": {
+        "nse_symbol": "ABFRL",
+        "sector": "Retailing"
+    },
+    "Pidilite Ind": {
+        "nse_symbol": "PIDILITIND",
+        "sector": "Chemicals"
+    },
+    "Blue Jet": {
+        "nse_symbol": "BLUEJET",
+        "sector": "Healthcare"
+    },
+    "Asian Paints": {
+        "nse_symbol": "ASIANPAINT",
+        "sector": "Chemicals"
+    },
+    "ITC": {
+        "nse_symbol": "ITC",
+        "sector": "Diversified"
+    },
+    "Swan Corp": {
+        "nse_symbol": "SWANCORP",
+        "sector": "Textiles"
+    },
+    "CAMS": {
+        "nse_symbol": "CAMS",
+        "sector": "Finance"
+    },
+    "PI Industries": {
+        "nse_symbol": "PIIND",
+        "sector": "Chemicals"
+    },
+    "IGL": {
+        "nse_symbol": "IGL",
+        "sector": "Industrial Gases & Fuels"
+    },
+    "ONGC": {
+        "nse_symbol": "ONGC",
+        "sector": "Oil & Gas"
+    },
+    "Tata Inv Corp": {
+        "nse_symbol": "TATAINVEST",
+        "sector": "Finance"
+    },
+    "ICICI Bank": {
+        "nse_symbol": "ICICIBANK",
+        "sector": "Banks"
+    },
+    "HUDCO": {
+        "nse_symbol": "HUDCO",
+        "sector": "Finance"
+    },
+    "Chola Invest.": {
+        "nse_symbol": "CHOLAFIN",
+        "sector": "Finance"
+    },
+    "Anant Raj": {
+        "nse_symbol": "ANANTRAJ",
+        "sector": "Real Estate"
+    },
+    "Coal India": {
+        "nse_symbol": "COALINDIA",
+        "sector": "Metals & Mining"
+    },
+    "SBI Card": {
+        "nse_symbol": "SBICARD",
+        "sector": "Finance"
+    },
+    "Action Const": {
+        "nse_symbol": "ACE",
+        "sector": "Capital Goods"
+    },
+    "Abbott India": {
+        "nse_symbol": "ABBOTINDIA",
+        "sector": "Healthcare"
+    },
+    "Sammaan Capital": {
+        "nse_symbol": "SAMMAANCAP",
+        "sector": "Finance"
+    },
+    "ABB India": {
+        "nse_symbol": "ABB",
+        "sector": "Capital Goods"
+    },
+    "Honeywell Autom": {
+        "nse_symbol": "HONAUT",
+        "sector": "Consumer Durables"
+    },
+    "ABLBL": {
+        "nse_symbol": "ABLBL",
+        "sector": "Retailing"
+    },
+    "Bosch": {
+        "nse_symbol": "BOSCHLTD",
+        "sector": "Automobile & Ancillaries"
+    },
+    "LT Technology": {
+        "nse_symbol": "LTTS",
+        "sector": "Capital Goods"
+    },
+    "Blue Dart": {
+        "nse_symbol": "BLUEDART",
+        "sector": "Logistics"
+    },
+    "Waaree Energies": {
+        "nse_symbol": "WAAREEENER",
+        "sector": "Capital Goods"
+    },
+    "Torrent Pharma": {
+        "nse_symbol": "TORNTPHARM",
+        "sector": "Healthcare"
+    },
+    "NLC India": {
+        "nse_symbol": "NLCINDIA",
+        "sector": "Others"
+    },
+    "Eicher Motors": {
+        "nse_symbol": "EICHERMOT",
+        "sector": "Automobile & Ancillaries"
+    },
+    "M&M": {
+        "nse_symbol": "M&M",
+        "sector": "Automobile & Ancillaries"
+    },
+    "Sai Life Sci": {
+        "nse_symbol": "SAILIFE",
+        "sector": "Healthcare"
+    },
+    "Adani Ports": {
+        "nse_symbol": "ADANIPORTS",
+        "sector": "Infrastructure"
+    },
+    "Gallantt Ispat": {
+        "nse_symbol": "GALLANTT",
+        "sector": "Metals & Mining"
+    },
+    "ICICI Prudentia": {
+        "nse_symbol": "ICICIPRULI",
+        "sector": "Insurance"
+    }
+}

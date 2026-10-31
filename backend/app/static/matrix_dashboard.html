@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>mybullandbear | 3-Tier Institutional Macro Intelligence Suite</title>
+  <meta name="description" content="Dedicated institutional multi-index parameter matrix & intraday Call vs Put OI shift monitor.">
+
+  <!-- PWA & Mobile Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0ea5e9">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2620/2620610.png">
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Terminal Stylesheets -->
+  <link rel="stylesheet" href="/static/css/tokens.css">
+  <link rel="stylesheet" href="/static/css/terminal.css?v=5.4.0">
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════════════
+       ZERO-SCROLL VIEWPORT FIX: STRICT 100vh FULL-SCREEN FIT
+       ═══════════════════════════════════════════════════════════════════ */
+    html, body {
+      height: 100vh;
+      max-height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* ZERO SCROLLING */
+      background-color: var(--bg-primary, #0c1017);
+      color: var(--text-primary, #f8fafc);
+      font-family: var(--font-sans, 'Inter', sans-serif);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.04) 0%, transparent 45%),
+        radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.035) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.02) 0%, transparent 55%);
+    }
+
+    /* Ultra-Slim Top Terminal Header (36px) */
+    .top-header-compact {
+      height: 36px;
+      min-height: 36px;
+      max-height: 36px;
+      background: rgba(13, 17, 23, 0.96);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 14px;
+      box-sizing: border-box;
+      z-index: 50;
+    }
+
+    .top-header-compact .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .top-header-compact .logo-icon {
+      font-size: 15px;
+      color: #38bdf8;
+    }
+
+    .top-header-compact .logo-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #f8fafc;
+      letter-spacing: -0.2px;
+    }
+
+    .top-header-compact .suite-tag {
+      font-size: 9.5px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #ffffff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      margin-left: 4px;
+    }
+
+    .top-header-compact .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-btn {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2.5px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .header-btn.primary {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+    }
+    .header-btn.primary:hover {
+      background: rgba(56, 189, 248, 0.25);
+    }
+
+    .header-btn.secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+    }
+    .header-btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #f1f5f9;
+    }
+
+    /* Main Flex Layout (Takes remaining 100vh height) */
+    .matrix-page-container {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 6px 12px 8px 12px;
+      gap: 6px;
+      box-sizing: border-box;
+      overflow: hidden;
+      max-width: 1920px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Slim Section Subheaders */
+    .section-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 16px;
+      min-height: 16px;
+      line-height: 16px;
+      margin: 0;
+      padding: 0 2px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .section-label strong {
+      color: #f8fafc;
+    }
+
+    .section-subinfo {
+      font-size: 10px;
+      color: #64748b;
+      font-family: var(--font-mono, monospace);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════
+       TIER 1: COMPACT 1-CLICK 5-INDEX SWITCHER CARDS (~50px Height)
+       ═══════════════════════════════════════════════════════════════════ */
+    .index-switcher-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      height: 52px;
+      min-height: 52px;
+      max-height: 52px;
+      box-sizing: border-box;
+    }
+
+    .index-card {
+      background: linear-gradient(135deg, rgba(20, 24, 35, 0.95), rgba(13, 17, 25, 0.95));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+    }
+
+    .index-card:hover {
+      border-color: rgba(56, 189, 248, 0.45);
+      background: linear-gradient(135deg, rgba(26, 32, 48, 0.95), rgba(15, 20, 30, 0.95));
+    }
+
+    .index-card.active {
+      border: 1.5px solid #38bdf8;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.3), inset 0 0 8px rgba(56, 189, 248, 0.1);
+      background: linear-gradient(135deg, rgba(18, 30, 48, 0.98), rgba(11, 18, 30, 0.98));
+    }
+
+    .index-card.active::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      background: linear-gradient(90deg, #38bdf8, #818cf8, #38bdf8);
+    }
+
+    .card-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      line-height: 1;
+    }
+
+    .card-sym-name {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #f8fafc;
+      letter-spacing: 0.2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .card-direction-badge {
+      font-size: 8.5px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      line-height: 1.1;
+    }
+
+    .badge-bull {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.5);
+    }
+
+    .badge-bear {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+
+    .badge-chop {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.5);
+    }
+
+    .card-mid-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1px;
+      line-height: 1;
+    }
+
+    .card-spot-price {
+      font-size: 13.5px;
+      font-weight: 900;
+      color: #f1f5f9;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    }
+
+    .card-score-pill {
+      font-size: 10px;
+      font-weight: 900;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      padding: 1.5px 6px;
+      border-radius: 10px;
+      border: 1.5px solid;
+      line-height: 1.1;
+    }
+
+    .score-green {
+      border-color: #10b981;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.2);
+    }
+
+    .score-yellow {
+      border-color: #f59e0b;
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.2);
+    }
+
+    .score-red {
+      border-color: #ef4444;
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    .card-sub-info {
+      font-size: 8px;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+      line-height: 1;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════
+       TIER 2: COMPACT 5-INDEX MASTER MATRIX TABLE (~195px Height)
+       ═══════════════════════════════════════════════════════════════════ */
+    .confluence-table-scroll-container {
+      background: #11141c;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      box-sizing: border-box;
+    }
+
+    .confluence-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 11px;
+    }
+
+    .confluence-table th {
+      background: #161a24;
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3.5px 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      white-space: nowrap;
+      line-height: 1.1;
+    }
+
+    .confluence-table td {
+      padding: 1.5px 3px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      vertical-align: middle;
+      height: 31px;
+      box-sizing: border-box;
+    }
+
+    .confluence-table tbody tr {
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+
+    .confluence-table tbody tr:hover {
+      background: rgba(56, 189, 248, 0.06);
+    }
+
+    .confluence-table tbody tr.row-active {
+      background: rgba(56, 189, 248, 0.12) !important;
+      border-left: 3px solid #38bdf8;
+    }
+
+    .sticky-index-cell {
+      position: sticky;
+      left: 0;
+      z-index: 25;
+      background: #161a24 !important;
+      min-width: 145px !important;
+      width: 145px !important;
+      border-right: 1.5px solid rgba(56, 189, 248, 0.35) !important;
+      padding-left: 6px !important;
+    }
+
+    .tier-box {
+      border-radius: 4px;
+      padding: 2px 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 28px;
+      min-height: 28px;
+      box-sizing: border-box;
+      line-height: 1;
+    }
+
+    .tier-box.dark-green { background: linear-gradient(145deg, #062b1a, #031c11); border: 1px solid #10b981; color: #34d399; }
+    .tier-box.light-green { background: linear-gradient(145deg, #092617, #061b11); border: 1px solid #22c55e; color: #86efac; }
+    .tier-box.yellow { background: linear-gradient(145deg, #2b1f07, #1b1304); border: 1px solid #f59e0b; color: #fde047; }
+    .tier-box.light-red { background: linear-gradient(145deg, #2b0e13, #1c090c); border: 1px solid #ef4444; color: #fca5a5; }
+    .tier-box.dark-red { background: linear-gradient(145deg, #3d0910, #24050a); border: 1px solid #dc2626; color: #f87171; }
+
+    .box-header-tag { font-size: 7.5px; text-transform: uppercase; font-weight: 700; opacity: 0.8; margin-bottom: 1px; }
+    .box-main-val { font-size: 10.5px; font-weight: 800; font-family: var(--font-mono, monospace); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .box-detail-sub { font-size: 7.8px; opacity: 0.85; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ═══════════════════════════════════════════════════════════════════
+       CONFLUENCE BACKGROUND SPARKLINE CELL
+       ═══════════════════════════════════════════════════════════════════ */
+    .confluence-sparkline-cell {
+      position: relative;
+      width: 100%;
+      height: 28px;
+      min-height: 28px;
+      border-radius: 4px;
+      overflow: hidden;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cell-sparkline-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .confluence-score-overlay {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.8);
+    }
+
+    .conf-top-tag {
+      font-size: 7.2px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      opacity: 0.95;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      margin-bottom: 1px;
+    }
+
+    .conf-shift-badge {
+      font-size: 7px;
+      font-weight: 800;
+      padding: 0.5px 3px;
+      border-radius: 2px;
+      line-height: 1;
+    }
+    .conf-shift-badge.up { background: rgba(34, 197, 94, 0.35); color: #86efac; border: 0.5px solid rgba(34, 197, 94, 0.6); }
+    .conf-shift-badge.down { background: rgba(239, 68, 68, 0.35); color: #fca5a5; border: 0.5px solid rgba(239, 68, 68, 0.6); }
+    .conf-shift-badge.flat { background: rgba(148, 163, 184, 0.25); color: #cbd5e1; }
+
+    .conf-main-num {
+      font-size: 13.5px;
+      font-weight: 900;
+      font-family: var(--font-mono, monospace);
+      line-height: 1;
+    }
+
+    .conf-denom {
+      font-size: 7.5px;
+      opacity: 0.7;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════
+       TIER 3: 2-PANEL BOTTOM ANALYTICS (Extended 5M Strategy Matrix)
+       ═══════════════════════════════════════════════════════════════════ */
+    .bottom-analytics-grid {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1.05fr 1.75fr;
+      gap: 8px;
+      box-sizing: border-box;
+    }
+
+    .analytics-panel {
+      background: linear-gradient(135deg, rgba(20, 24, 35, 0.94), rgba(12, 16, 24, 0.98));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 5px 8px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      box-sizing: border-box;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 2px;
+      line-height: 1;
+      height: 18px;
+      min-height: 18px;
+    }
+
+    .panel-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .panel-mode-toggles {
+      display: flex;
+      gap: 3px;
+      align-items: center;
+    }
+
+    .mode-toggle-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      font-size: 8.5px;
+      font-weight: 700;
+      padding: 1.5px 5.5px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      line-height: 1.1;
+      font-family: var(--font-sans, sans-serif);
+    }
+
+    .mode-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #f8fafc;
+    }
+
+    .mode-toggle-btn.active {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: #38bdf8;
+      color: #38bdf8;
+      box-shadow: 0 0 6px rgba(56, 189, 248, 0.25);
+    }
+
+    .panel-legend {
+      display: flex;
+      gap: 6px;
+      font-size: 8.5px;
+      font-weight: 700;
+    }
+
+    .chart-container-svg {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      position: relative;
+    }
+
+    .chart-time-axis {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8px;
+      color: #64748b;
+      margin-top: 1px;
+      font-family: var(--font-mono, monospace);
+      line-height: 1;
+      height: 10px;
+    }
+
+    /* Panel 2 Bottom Statistics */
+    .panel-bottom-stats-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2px;
+      padding-top: 2px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 8.5px;
+      line-height: 1.1;
+    }
+
+    .vol-ratio-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .vol-ratio-track {
+      flex: 1;
+      height: 4px;
+      background: rgba(248, 113, 113, 0.4);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .vol-ratio-fill {
+      height: 100%;
+      background: #34d399;
+      border-radius: 2px;
+    }
+
+    /* Institutional Fortress & Strike Lab styling */
+    .fortress-container {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5px;
+      flex: 1;
+      min-height: 0;
+      justify-content: space-between;
+    }
+
+    .fortress-row {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      padding: 2.5px 7px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      line-height: 1.1;
+    }
+
+    .fortress-label-group {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .fortress-tag {
+      font-size: 7.5px;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .fortress-tag.res { background: rgba(239, 68, 68, 0.25); color: #f87171; border: 0.5px solid rgba(239, 68, 68, 0.5); }
+    .fortress-tag.sup { background: rgba(16, 185, 129, 0.25); color: #34d399; border: 0.5px solid rgba(16, 185, 129, 0.5); }
+    .fortress-tag.straddle { background: rgba(245, 158, 11, 0.25); color: #fbbf24; border: 0.5px solid rgba(245, 158, 11, 0.5); }
+    .fortress-tag.conf { background: rgba(56, 189, 248, 0.25); color: #38bdf8; border: 0.5px solid rgba(56, 189, 248, 0.5); }
+
+    .fortress-title {
+      font-size: 9.5px;
+      color: #cbd5e1;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .fortress-val {
+      font-size: 11px;
+      font-weight: 800;
+      font-family: var(--font-mono, monospace);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .fortress-sub {
+      font-size: 8px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .notice-banner {
+      background: rgba(56, 189, 248, 0.06);
+      border: 1px dashed rgba(56, 189, 248, 0.25);
+      border-radius: 4px;
+      padding: 2.5px 6px;
+      font-size: 8px;
+      color: #94a3b8;
+      text-align: center;
+      line-height: 1.2;
+      margin-top: 1px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════
+       INTER-MARKET DIVERGENCE & RELATIVE STRENGTH RIBBON
+       ═══════════════════════════════════════════════════════════════════ */
+    .divergence-ribbon {
+      height: 22px;
+      min-height: 22px;
+      max-height: 22px;
+      background: linear-gradient(90deg, rgba(20, 26, 38, 0.98), rgba(13, 17, 26, 0.98));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 8px;
+      box-sizing: border-box;
+      font-size: 9px;
+      line-height: 1;
+      margin: 1px 0 2px 0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .div-radar-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .div-radar-pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      animation: pulse-glow 1.5s infinite;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    @keyframes pulse-glow {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.7; }
+    }
+
+    .rs-ranking-list {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-mono, monospace);
+      font-size: 8px;
+      white-space: nowrap;
+    }
+
+    .rs-pill {
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-weight: 800;
+      line-height: 1.1;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .rs-pill:hover { filter: brightness(1.2); }
+    .rs-pill.dark-green { background: rgba(16, 185, 129, 0.25); color: #34d399; border: 0.5px solid rgba(16, 185, 129, 0.6); }
+    .rs-pill.light-green { background: rgba(34, 197, 94, 0.2); color: #86efac; border: 0.5px solid rgba(34, 197, 94, 0.5); }
+    .rs-pill.yellow { background: rgba(245, 158, 11, 0.2); color: #fde047; border: 0.5px solid rgba(245, 158, 11, 0.5); }
+    .rs-pill.light-red { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 0.5px solid rgba(239, 68, 68, 0.5); }
+    .rs-pill.dark-red { background: rgba(220, 38, 38, 0.25); color: #f87171; border: 0.5px solid rgba(220, 38, 38, 0.6); }
+
+    /* ═══════════════════════════════════════════════════════════════════
+       PANEL 3: 4-COLUMN 5M STRATEGY CONFLUENCE MATRIX (SHONYA BOT)
+       Column 1: Indices | Column 2: Option Chain Signal | Column 3: Hull | Column 4: Action
+       ═══════════════════════════════════════════════════════════════════ */
+    .strategy-matrix-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 0;
+      position: relative;
+    }
+
+    .strategy-table-scroll-wrap {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      margin-top: 2px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.15) transparent;
+    }
+
+    .strategy-confluence-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 2px;
+      font-size: 8.5px;
+    }
+
+    .strategy-confluence-table thead th {
+      font-size: 7.5px;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 3px 5px;
+      background: rgba(15, 23, 42, 0.95);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      white-space: nowrap;
+    }
+
+    .strategy-confluence-table tbody tr {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 4px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .strategy-confluence-table tbody tr:hover {
+      background: rgba(56, 189, 248, 0.08);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .strategy-confluence-table tbody tr.active-strat-row {
+      background: rgba(56, 189, 248, 0.14);
+      border-left: 2.5px solid #38bdf8;
+    }
+
+    .strategy-confluence-table td {
+      padding: 3px 5px;
+      vertical-align: middle;
+      line-height: 1.1;
+    }
+
+    /* Column 1: Indices */
+    .strat-sym-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .strat-sym-name {
+      font-weight: 800;
+      font-size: 10px;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      letter-spacing: 0.2px;
+    }
+
+    .strat-spot-val {
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      color: #38bdf8;
+      font-weight: 700;
+    }
+
+    .strat-sub-meta {
+      font-size: 7px;
+      color: #64748b;
+      display: flex;
+      gap: 4px;
+      font-family: var(--font-mono, monospace);
+    }
+
+    /* Column 2: Option Chain Signal & Strength */
+    .strat-signal-badge {
+      display: inline-block;
+      font-weight: 800;
+      font-size: 7.5px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      line-height: 1.1;
+    }
+    .strat-signal-badge.dark-green { background: rgba(5, 150, 105, 0.28); color: #34d399; border: 0.5px solid rgba(52, 211, 153, 0.5); }
+    .strat-signal-badge.light-green { background: rgba(16, 185, 129, 0.20); color: #86efac; border: 0.5px solid rgba(134, 239, 172, 0.4); }
+    .strat-signal-badge.dark-red { background: rgba(220, 38, 38, 0.28); color: #f87171; border: 0.5px solid rgba(248, 113, 113, 0.5); }
+    .strat-signal-badge.light-red { background: rgba(239, 68, 68, 0.20); color: #fca5a5; border: 0.5px solid rgba(252, 165, 165, 0.4); }
+    .strat-signal-badge.yellow { background: rgba(217, 119, 6, 0.22); color: #fbbf24; border: 0.5px solid rgba(251, 191, 36, 0.4); }
+
+    .strat-sub-desc {
+      font-size: 7.8px;
+      color: #94a3b8;
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 320px;
+    }
+
+    /* Column 3: Hull Indicator (5M) */
+    .strat-hull-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .strat-hull-trend {
+      font-weight: 800;
+      font-size: 8.5px;
+      letter-spacing: 0.3px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .strat-hull-trend.bull { color: #34d399; }
+    .strat-hull-trend.bear { color: #f87171; }
+    .strat-hull-trend.neutral { color: #fbbf24; }
+
+    /* Column 4: What to do? Buy Call or Put? */
+    .strat-action-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+    }
+
+    .strat-action-pill {
+      font-weight: 900;
+      font-size: 8.5px;
+      padding: 2px 7.5px;
+      border-radius: 3px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      line-height: 1.1;
+    }
+    .strat-action-pill.buy-ce {
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #ffffff;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+    }
+    .strat-action-pill.buy-pe {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      color: #ffffff;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+    }
+    .strat-action-pill.conflict {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #f87171;
+      color: #fca5a5;
+    }
+    .strat-action-pill.standby {
+      background: rgba(245, 158, 11, 0.18);
+      border: 1px solid #fbbf24;
+      color: #fde68a;
+    }
+
+    .strat-action-strike {
+      font-family: var(--font-mono, monospace);
+      font-weight: 800;
+      font-size: 8.5px;
+      color: #f8fafc;
+    }
+
+    .strat-action-sub {
+      font-size: 7.2px;
+      color: #64748b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 280px;
+    }
+
+    .strategy-matrix-legend {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 2px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 7px;
+      color: #94a3b8;
+      line-height: 1;
+      margin-top: 2px;
+    }
+  </style>
+
+</head>
+<body>
+
+  <!-- Ultra-Compact Top Bar (36px) -->
+  <header class="top-header-compact">
+    <div class="logo-section">
+      <span class="logo-icon">⚡</span>
+      <span class="logo-title">mybullandbear</span>
+      <span class="suite-tag">3-TIER SUITE</span>
+    </div>
+
+    <div class="header-right">
+      <div style="font-size: 10px; color: #4ade80; font-weight: 700; font-family: var(--font-mono);" id="live-indicator">
+        ● LIVE MATRIX <span id="session-clock" style="color: #94a3b8;">-- IST</span>
+      </div>
+      <button class="header-btn primary" onclick="fetchMatrixData(); loadTimeseriesChart(currentActiveSymbol);">
+        ↻ REFRESH
+      </button>
+      <a href="/" class="header-btn secondary">
+        ← TERMINAL
+      </a>
+    </div>
+  </header>
+
+  <!-- 100vh Flex Container (Zero-Scroll) -->
+  <main class="matrix-page-container">
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         TIER 1: 5-INDEX SWITCHER CARDS
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div class="section-meta-row">
+      <div class="section-label">
+        <span>⚡</span> <strong>5-Index Macro Intelligence Suite</strong> (1-Click Switcher)
+      </div>
+      <div class="section-subinfo">
+        Auto-refresh: <strong id="poll-timer-text" style="color: #38bdf8;">3s</strong>
+      </div>
+    </div>
+
+    <div class="index-switcher-grid" id="index-switcher-cards">
+      <!-- Injected via JavaScript -->
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         INTER-MARKET DIVERGENCE & RELATIVE STRENGTH RIBBON
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div class="divergence-ribbon" id="divergence-ribbon">
+      <div class="div-radar-badge" id="div-radar-headline">
+        <span class="div-radar-pulse" id="div-radar-pulse-dot" style="background: #38bdf8;"></span>
+        <span id="div-headline-text">Analyzing Multi-Index Market Flow...</span>
+      </div>
+      <div class="rs-ranking-list" id="rs-rankings-container">
+        <!-- Dynamic RS Pills -->
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         TIER 2: MASTER 5-INDEX PARAMETER MATRIX TABLE
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div class="section-meta-row">
+      <div class="section-label">
+        <span>📊</span> <strong>5-Index Quantitative Parameter Matrix</strong>
+      </div>
+      <div class="section-subinfo">
+        ● Click any row to inspect deep dive
+      </div>
+    </div>
+
+    <div class="confluence-table-scroll-container">
+      <table class="confluence-table">
+        <thead>
+          <tr>
+            <th class="sticky-index-cell" style="width: 145px; min-width: 145px; text-align: left;">INDEX &amp; SPOT</th>
+            <th style="width: 135px; min-width: 135px;">TRAP RADAR</th>
+            <th style="width: 135px; min-width: 135px;">BREAKOUT STRENGTH</th>
+            <th style="width: 130px; min-width: 130px;">PROXIMITY (MAPO)</th>
+            <th style="width: 100px; min-width: 100px;">PCR</th>
+            <th style="width: 175px; min-width: 175px;">OI DIFFERENCE (1M Δ)</th>
+            <th style="width: 165px; min-width: 165px;">CALL OI PARAMETER</th>
+            <th style="width: 165px; min-width: 165px;">PUT OI PARAMETER</th>
+            <th style="width: 125px; min-width: 125px; text-align: center;">CONFLUENCE &amp; SPARKLINE</th>
+            <th style="width: 215px; min-width: 215px;">DIRECTIVE</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-tbody">
+          <tr>
+            <td colspan="10" style="text-align: center; padding: 15px; color: var(--text-secondary);">
+              Streaming live market data...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         TIER 3: 3-PANEL BOTTOM ANALYTICS (Zero Order Execution Buttons)
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div class="section-meta-row">
+      <div class="section-label">
+        <span>📈</span> Active Deep Dive: <strong id="active-index-banner" style="color: #38bdf8;">NIFTY 50</strong>
+      </div>
+      <div class="section-subinfo">
+        Continuous Session: <strong>09:15 - 15:30 IST</strong>
+      </div>
+    </div>
+
+    <div class="bottom-analytics-grid">
+
+      <!-- Panel 1: Intraday Call vs Put OI Shift (Dual Total & Change in OI) -->
+      <div class="analytics-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>📉</span> Call vs Put OI Shift (09:15-15:30)
+          </div>
+          <div class="panel-mode-toggles">
+            <button class="mode-toggle-btn active" id="btn-mode-split" onclick="setOIGraphMode('split')">⚡ SPLIT (BOTH)</button>
+            <button class="mode-toggle-btn" id="btn-mode-total" onclick="setOIGraphMode('total')">TOTAL OI</button>
+            <button class="mode-toggle-btn" id="btn-mode-chg" onclick="setOIGraphMode('chg')">CHANGE IN OI (ΔOI)</button>
+          </div>
+          <div class="panel-legend">
+            <span style="color: #f87171;">● Call OI</span>
+            <span style="color: #34d399;">● Put OI</span>
+          </div>
+        </div>
+        <div id="chart-oi-timeline-wrap" class="chart-container-svg">
+          <!-- Rendered via dynamic SVG -->
+        </div>
+        <div class="chart-time-axis">
+          <span>09:15</span><span>10:30</span><span>11:45</span><span>13:00</span><span>14:15</span><span>15:30</span>
+        </div>
+      </div>
+
+      <!-- Panel 2: 4-Column 5M Strategy Confluence Matrix (OI Chain + Hull Indicator) - EXTENDED FULL WIDTH -->
+      <div class="analytics-panel strategy-matrix-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span style="color: #38bdf8;">⚡</span> 5M STRATEGY CONFLUENCE MATRIX <span style="font-size: 8.5px; color: #94a3b8; font-weight: 600; margin-left: 6px;">(SHONYA BOT QUANTITATIVE DECISION HUB)</span>
+          </div>
+          <div style="font-size: 8px; color: #4ade80; font-weight: 700; font-family: var(--font-mono); display: flex; align-items: center; gap: 4px;">
+            <span style="display:inline-block; width: 6px; height: 6px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 6px #4ade80;"></span>
+            LIVE TICK
+          </div>
+        </div>
+
+        <!-- 4-COLUMN CONFLUENCE TABLE (ALL INDICES) -->
+        <div class="strategy-table-scroll-wrap">
+          <table class="strategy-confluence-table">
+            <thead>
+              <tr>
+                <th style="width: 17%; text-align: left;">1. INDICES</th>
+                <th style="width: 33%; text-align: left;">2. OPTION CHAIN SIGNAL &amp; STRENGTH</th>
+                <th style="width: 25%; text-align: left;">3. HULL INDICATOR (5M)</th>
+                <th style="width: 25%; text-align: center;">4. WHAT TO DO (BUY CALL/PUT ?)</th>
+              </tr>
+            </thead>
+            <tbody id="strategy-table-tbody">
+              <tr>
+                <td colspan="4" style="text-align: center; color: #94a3b8; padding: 14px 0;">
+                  Calculating 5M OI Buildup + Hull Confluence...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Strategy Rules Legend Footer -->
+        <div class="strategy-matrix-legend">
+          <span><strong style="color: #4ade80;">● BUY CALL:</strong> Put Hull Falling 🔴 (Market Bullish) + Put OI Floor</span>
+          <span><strong style="color: #f87171;">● BUY PUT:</strong> Call Hull Falling 🔴 (Market Bearish) + Call OI Wall</span>
+          <span><strong style="color: #fbbf24;">● CONFLICT:</strong> Opposing Filter (Stand Aside)</span>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    let currentActiveSymbol = "NIFTY";
+    let cachedMatrixData = [];
+    let cachedTimeseriesData = [];
+    let currentOIGraphMode = 'split'; // 'split' (both), 'total', 'chg'
+    let refreshSecondsRemaining = 3;
+    let timerInterval = null;
+    let isMatrixFetching = false;
+    let isTimeseriesFetching = false;
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchMatrixData();
+      loadTimeseriesChart(currentActiveSymbol);
+
+      timerInterval = setInterval(() => {
+        refreshSecondsRemaining--;
+        if (refreshSecondsRemaining <= 0) {
+          fetchMatrixData();
+          loadTimeseriesChart(currentActiveSymbol);
+          refreshSecondsRemaining = 3;
+        }
+        const el = document.getElementById('poll-timer-text');
+        if (el) el.textContent = `${refreshSecondsRemaining}s`;
+      }, 1000);
+
+      window.addEventListener('resize', () => {
+        if (cachedTimeseriesData.length > 0) {
+          renderOITimelineSVG(cachedTimeseriesData);
+          renderNetDiffSVG(cachedTimeseriesData);
+        }
+      });
+    });
+
+    function setOIGraphMode(mode) {
+      if (!mode) return;
+      currentOIGraphMode = mode;
+      ['split', 'total', 'chg'].forEach(m => {
+        const btn = document.getElementById(`btn-mode-${m}`);
+        if (btn) btn.classList.toggle('active', m === mode);
+      });
+      if (cachedTimeseriesData.length > 0) {
+        renderOITimelineSVG(cachedTimeseriesData);
+      }
+    }
+
+    function selectIndex(sym) {
+      if (!sym) return;
+      currentActiveSymbol = sym;
+      document.getElementById('active-index-banner').textContent = sym === 'NIFTY' ? 'NIFTY 50' : sym;
+      renderSwitcherCards(cachedMatrixData);
+      renderMasterMatrix(cachedMatrixData);
+      const stratList = cachedMatrixData.map(d => d.strategy_confluence).filter(Boolean);
+      if (stratList.length > 0) renderStrategyConfluenceTable(stratList);
+      loadTimeseriesChart(sym);
+    }
+
+    async function fetchMatrixData() {
+      if (isMatrixFetching) return;
+      isMatrixFetching = true;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      try {
+        const res = await fetch('/api/matrix/live', { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+        const json = await res.json();
+        
+        if (json.status === 'success' && json.data) {
+          cachedMatrixData = json.data;
+          try { renderSwitcherCards(json.data); } catch (e) { console.error('Switcher render error:', e); }
+          try { renderMasterMatrix(json.data); } catch (e) { console.error('Master matrix render error:', e); }
+          try {
+            if (json.strategy_table && json.strategy_table.length > 0) {
+              renderStrategyConfluenceTable(json.strategy_table);
+            } else {
+              const stratList = json.data.map(d => d.strategy_confluence).filter(Boolean);
+              if (stratList.length > 0) renderStrategyConfluenceTable(stratList);
+            }
+          } catch (e) { console.error('Strategy table render error:', e); }
+          if (json.market_divergence) {
+            try { renderDivergenceRibbon(json.market_divergence); } catch (e) {}
+          }
+          if (json.timestamp) {
+            document.getElementById('session-clock').textContent = `${json.timestamp.split(' ')[1] || json.timestamp} IST`;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load matrix data:", err);
+      } finally {
+        clearTimeout(timeoutId);
+        isMatrixFetching = false;
+      }
+    }
+
+    async function loadTimeseriesChart(sym) {
+      if (isTimeseriesFetching) return;
+      isTimeseriesFetching = true;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      try {
+        const res = await fetch(`/api/matrix/timeseries/${sym}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.status === 'success') {
+          cachedTimeseriesData = json.timeline || [];
+          renderOITimelineSVG(cachedTimeseriesData);
+          renderNetDiffSVG(cachedTimeseriesData);
+          updateInstitutionalPanel(json.parameters || json.anchors || {});
+        }
+      } catch (err) {
+        console.error("Failed to load timeseries:", err);
+      } finally {
+        clearTimeout(timeoutId);
+        isTimeseriesFetching = false;
+      }
+    }
+
+    // Helper: Build SVG Background Sparkline (09:15 to 15:30)
+    function buildSparklineSVG(points, w = 120, h = 28, strokeColor = '#34d399', gradId = 'spark-grad') {
+      if (!points || points.length === 0) {
+        return `<svg class="cell-sparkline-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><line x1="0" y1="${h/2}" x2="${w}" y2="${h/2}" stroke="rgba(255,255,255,0.1)" stroke-dasharray="2,2"/></svg>`;
+      }
+
+      if (points.length === 1) {
+        points = [points[0], points[0]];
+      }
+
+      const minV = Math.max(0, Math.min(...points) - 4);
+      const maxV = Math.min(100, Math.max(...points) + 4);
+      const range = Math.max(1, maxV - minV);
+      const n = points.length;
+
+      const padX = 2;
+      const padY = 3;
+      const innerW = w - padX * 2;
+      const innerH = h - padY * 2;
+
+      const getX = i => padX + (i / Math.max(1, n - 1)) * innerW;
+      const getY = v => padY + innerH - ((v - minV) / range) * innerH;
+
+      let lineD = '';
+      let areaD = '';
+
+      points.forEach((val, i) => {
+        const x = getX(i);
+        const y = getY(val);
+        if (i === 0) {
+          lineD += `M ${x} ${y}`;
+          areaD += `M ${x} ${h} L ${x} ${y}`;
+        } else {
+          lineD += ` L ${x} ${y}`;
+          areaD += ` L ${x} ${y}`;
+        }
+      });
+
+      const lastX = getX(n - 1);
+      const lastY = getY(points[n - 1]);
+      areaD += ` L ${lastX} ${h} Z`;
+
+      return `
+        <svg class="cell-sparkline-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="${strokeColor}" stop-opacity="0.38"/>
+              <stop offset="100%" stop-color="${strokeColor}" stop-opacity="0.02"/>
+            </linearGradient>
+          </defs>
+          <path d="${areaD}" fill="url(#${gradId})" />
+          <path d="${lineD}" fill="none" stroke="${strokeColor}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="${lastX}" cy="${lastY}" r="2" fill="${strokeColor}" stroke="#ffffff" stroke-width="0.7"/>
+        </svg>
+      `;
+    }
+
+    function renderSwitcherCards(dataList) {
+      const container = document.getElementById('index-switcher-cards');
+      if (!container || !dataList || dataList.length === 0) return;
+
+      let html = '';
+      dataList.forEach(item => {
+        const sym = item.symbol;
+        const isActive = (sym === currentActiveSymbol);
+        const spot = item.spot_price;
+        const confObj = item.confluence || {};
+        const conf = confObj.score || 50;
+
+        let badgeClass = 'badge-chop';
+        let dirLabel = 'CHOP';
+        if (conf >= 60) {
+          badgeClass = 'badge-bull';
+          dirLabel = 'BULLISH';
+        } else if (conf <= 40) {
+          badgeClass = 'badge-bear';
+          dirLabel = 'BEARISH';
+        }
+
+        let pillClass = 'score-yellow';
+        let strokeColor = '#fbbf24';
+        if (conf >= 60) {
+          pillClass = 'score-green';
+          strokeColor = '#34d399';
+        } else if (conf <= 40) {
+          pillClass = 'score-red';
+          strokeColor = '#f87171';
+        }
+
+        const spotStr = spot > 0 ? `₹${spot.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})}` : '--';
+        const cardSpark = buildSparklineSVG(confObj.sparkline || [conf], 60, 20, strokeColor, `card-spark-${sym}`);
+
+        html += `
+          <div class="index-card ${isActive ? 'active' : ''}" onclick="selectIndex('${sym}')">
+            <div class="card-top-row">
+              <div class="card-sym-name">
+                <span style="color: var(--color-orange);">⚡</span> ${sym === 'NIFTY' ? 'NIFTY 50' : sym}
+              </div>
+              <span class="card-direction-badge ${badgeClass}">${dirLabel}</span>
+            </div>
+            <div class="card-mid-row" style="position: relative;">
+              <div class="card-spot-price">${spotStr}</div>
+              <div style="position: relative; overflow: hidden; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; min-width: 50px;">
+                ${cardSpark}
+                <div class="card-score-pill ${pillClass}" style="position: relative; z-index: 2; margin: 0; padding: 1px 6px; background: rgba(15, 23, 42, 0.75);">
+                  ${conf}
+                </div>
+              </div>
+            </div>
+            <div class="card-sub-info">
+              <span>ATM: <strong>${item.atm_strike || '--'}</strong></span>
+              <span>PCR: <strong>${item.pcr?.value?.toFixed(2) || '1.00'}</strong></span>
+              <span>LOT: <strong>${item.lot_size || 20}</strong></span>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderMasterMatrix(dataList) {
+      const tbody = document.getElementById('matrix-tbody');
+      if (!dataList || dataList.length === 0) return;
+
+      let html = '';
+      dataList.forEach(item => {
+        const sym = item.symbol;
+        const isActive = (sym === currentActiveSymbol);
+        const spot = item.spot_price || 0;
+        const brk = item.breakout || { state: 'FLAT', signal: 'WAIT', strength_score: 0, color: 'yellow' };
+        const prox = item.proximity || { mapo_pct: 50, state: 'MID', color: 'yellow' };
+        const pcr = item.pcr || { value: 1.0, color: 'yellow', trend: 'BALANCED' };
+        const oid = item.oi_difference || { net_diff_formatted: '--', diff_velocity_1m: '--', velocity_label: 'FLAT', color: 'yellow' };
+        const ce = item.call_positioning || item.call_oi || { buildup: '--', total_oi: '--', oi_chg_session: '--', color: 'yellow' };
+        const pe = item.put_positioning || item.put_oi || { buildup: '--', total_oi: '--', oi_chg_session: '--', color: 'yellow' };
+        const conf = item.confluence || { score: 50, color: 'yellow' };
+        const act = item.action || { signal: 'STANDBY', verdict_text: 'Hold', color: 'yellow' };
+        const trap = item.trap || { badge: '🛡️ CLEAN', color: 'yellow', trap_risk: 'LOW (12%)', action: 'NORMAL' };
+
+        const arrowHtml = oid.trend_arrow === '▲' 
+          ? `<span style="color: #4ade80; font-weight: 900; margin-right: 2px;">▲</span>` 
+          : (oid.trend_arrow === '▼' ? `<span style="color: #f87171; font-weight: 900; margin-right: 2px;">▼</span>` : `<span>►</span>`);
+
+        const spotFormatted = spot > 0 ? `₹${spot.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})}` : '--';
+
+        // Confluence Sparkline logic
+        const isBull = conf.score >= 58;
+        const isBear = conf.score <= 42;
+        const strokeColor = isBull ? '#34d399' : (isBear ? '#f87171' : '#fbbf24');
+        const shiftVal = conf.shift !== undefined ? conf.shift : 0;
+        const shiftClass = shiftVal > 0 ? 'up' : (shiftVal < 0 ? 'down' : 'flat');
+        const shiftSign = shiftVal > 0 ? '+' : '';
+        const sparkSvg = buildSparklineSVG(conf.sparkline || [conf.score], 122, 28, strokeColor, `row-spark-${sym}`);
+
+        html += `
+          <tr class="${isActive ? 'row-active' : ''}" onclick="selectIndex('${sym}')">
+            <!-- 1. Sticky Index & Spot (Ultra Compact 1-liner) -->
+            <td class="sticky-index-cell">
+              <div style="display: flex; justify-content: space-between; align-items: center; line-height: 1.1;">
+                <span style="font-size: 11.5px; font-weight: 800; color: #f8fafc;">
+                  <span style="color: var(--color-orange);">⚡</span> ${sym}
+                </span>
+                <span style="font-size: 11px; color: #38bdf8; font-family: var(--font-mono); font-weight: 700;">${spotFormatted}</span>
+              </div>
+              <div style="font-size: 8px; color: #64748b; margin-top: 1px; display: flex; justify-content: space-between; line-height: 1;">
+                <span>ATM: <strong style="color:#cbd5e1;">${item.atm_strike > 0 ? item.atm_strike : '--'}</strong></span>
+                <span>LOT: <strong style="color:#cbd5e1;">${item.lot_size || 20}</strong></span>
+                <span>EXP: <strong style="color:#38bdf8;">${item.expiry_day?.split(' ')[0] || 'Tue'}</strong></span>
+              </div>
+            </td>
+
+            <!-- 2. Trap Radar Column -->
+            <td>
+              <div class="tier-box ${trap.color || 'yellow'}">
+                <div class="box-header-tag">TRAP RADAR</div>
+                <div class="box-main-val" style="font-size: 8.8px;">${trap.badge || '🛡️ CLEAN'}</div>
+                <div class="box-detail-sub">${trap.trap_risk || 'LOW'} • ${trap.action || 'NORMAL'}</div>
+              </div>
+            </td>
+
+            <!-- 3. Breakout Strength -->
+            <td>
+              <div class="tier-box ${brk.color}">
+                <div class="box-header-tag">BT: ${brk.state}</div>
+                <div class="box-main-val">${brk.signal} (${brk.strength_score.toFixed(0)}%)</div>
+                <div class="box-detail-sub">${brk.trail ? 'Trail: ' + brk.trail.toFixed(1) : (brk.level ? 'Lvl: ' + brk.level.toFixed(1) : 'Inside Corridor')}</div>
+              </div>
+            </td>
+
+            <!-- 3. Proximity (MAPO) -->
+            <td>
+              <div class="tier-box ${prox.color}">
+                <div class="box-header-tag">MAPO Ribbon</div>
+                <div class="box-main-val">${prox.mapo_pct.toFixed(1)}%</div>
+                <div class="box-detail-sub">${prox.state}</div>
+              </div>
+            </td>
+
+            <!-- 4. PCR -->
+            <td>
+              <div class="tier-box ${pcr.color}">
+                <div class="box-header-tag">PCR Ratio</div>
+                <div class="box-main-val">${pcr.value.toFixed(2)}</div>
+                <div class="box-detail-sub">${pcr.trend}</div>
+              </div>
+            </td>
+
+            <!-- 5. OI Difference & 1m Velocity -->
+            <td>
+              <div class="tier-box ${oid.color}">
+                <div class="box-header-tag">Net OI (Put - Call)</div>
+                <div class="box-main-val">${oid.net_diff_formatted}</div>
+                <div class="box-detail-sub">
+                  ${arrowHtml} ${oid.diff_velocity_1m} / 1m (${oid.velocity_label})
+                </div>
+              </div>
+            </td>
+
+            <!-- 6. Call OI Parameter -->
+            <td>
+              <div class="tier-box ${ce.color}">
+                <div class="box-header-tag">Call Positioning</div>
+                <div class="box-main-val" style="font-size: 10px;">${ce.buildup}</div>
+                <div class="box-detail-sub">Tot: ${ce.total_oi} | Chg: ${ce.oi_chg_session}</div>
+              </div>
+            </td>
+
+            <!-- 7. Put OI Parameter -->
+            <td>
+              <div class="tier-box ${pe.color}">
+                <div class="box-header-tag">Put Positioning</div>
+                <div class="box-main-val" style="font-size: 10px;">${pe.buildup}</div>
+                <div class="box-detail-sub">Tot: ${pe.total_oi} | Chg: ${pe.oi_chg_session}</div>
+              </div>
+            </td>
+
+            <!-- 8. Confluence Score & Background Full-Day Sparkline -->
+            <td style="padding: 1.5px 3px;">
+              <div class="confluence-sparkline-cell ${conf.color}" title="Session Open: ${conf.day_open ?? '--'} | Low: ${conf.day_low ?? '--'} | High: ${conf.day_high ?? '--'} | Current: ${conf.score}">
+                ${sparkSvg}
+                <div class="confluence-score-overlay">
+                  <div class="conf-top-tag">
+                    <span>09:15➔Now</span>
+                    <span class="conf-shift-badge ${shiftClass}">${shiftSign}${shiftVal}</span>
+                  </div>
+                  <div class="conf-main-num">
+                    ${conf.score} <span class="conf-denom">/100</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <!-- 9. Directive -->
+            <td>
+              <div class="tier-box ${act.color}">
+                <div class="box-header-tag">Directive</div>
+                <div class="box-main-val" style="font-size: 9.5px;">${act.signal}</div>
+                <div class="box-detail-sub">${act.verdict_text}</div>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 4-COLUMN 5M STRATEGY CONFLUENCE MATRIX TABLE (SHONYA BOT)
+    // ═══════════════════════════════════════════════════════════════════
+    function renderStrategyConfluenceTable(strategyData) {
+      const tbody = document.getElementById('strategy-table-tbody');
+      if (!tbody || !strategyData || strategyData.length === 0) return;
+
+      let html = '';
+      strategyData.forEach(item => {
+        const sym = item.symbol;
+        const spot = item.spot_price;
+        const atm = item.atm_strike;
+        const lot = item.lot_size;
+        const isActive = (sym === currentActiveSymbol);
+        const spotFormatted = spot > 0 ? `₹${spot.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})}` : '--';
+
+        const oi = item.option_chain_signal || {};
+        const hull = item.hull_indicator || {};
+        const act = item.action || {};
+
+        let actPillClass = 'standby';
+        if (act.type === 'CE' || act.verdict === 'BUY CALL' || act.badge_color === 'dark-green') actPillClass = 'buy-ce';
+        else if (act.type === 'PE' || act.verdict === 'BUY PUT' || act.badge_color === 'dark-red') actPillClass = 'buy-pe';
+        else if (act.is_opposed || (act.verdict && act.verdict.includes('CONFLICT')) || act.badge_color === 'light-red') actPillClass = 'conflict';
+
+        let hullClass = 'neutral';
+        if (hull.trend === 'BULLISH' || (hull.badge_color && hull.badge_color.includes('green'))) hullClass = 'bull';
+        else if (hull.trend === 'BEARISH' || (hull.badge_color && hull.badge_color.includes('red'))) hullClass = 'bear';
+
+        html += `
+          <tr class="${isActive ? 'active-strat-row' : ''}" onclick="selectIndex('${sym}')">
+            <!-- COLUMN 1: INDICES -->
+            <td>
+              <div class="strat-sym-col">
+                <span class="strat-sym-name"><span style="color: var(--color-orange);">⚡</span> ${sym}</span>
+                <span class="strat-spot-val">${spotFormatted}</span>
+                <div class="strat-sub-meta">
+                  <span>ATM: ${atm > 0 ? atm : '--'}</span>
+                  <span>• Lot: ${lot || 20}</span>
+                </div>
+              </div>
+            </td>
+
+            <!-- COLUMN 2: OPTION CHAIN SIGNAL & STRENGTH -->
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 1.5px;">
+                <div>
+                  <span class="strat-signal-badge ${oi.badge_color || 'yellow'}">${oi.label || 'NEUTRAL'}</span>
+                </div>
+                <div class="strat-sub-desc" title="${oi.strength_desc || ''}">${oi.strength_desc || '--'}</div>
+              </div>
+            </td>
+
+            <!-- COLUMN 3: HULL INDICATOR (5M) -->
+            <td>
+              <div class="strat-hull-col">
+                <span class="strat-hull-trend ${hullClass}">${hull.label || 'NEUTRAL'}</span>
+                <div class="strat-sub-desc" title="${hull.desc || ''}">${hull.desc || 'EHMA 14'}</div>
+              </div>
+            </td>
+
+            <!-- COLUMN 4: WHAT TO DO (BUY CALL OR PUT ?) -->
+            <td style="text-align: center;">
+              <div class="strat-action-box">
+                <span class="strat-action-pill ${actPillClass}">${act.verdict || 'STANDBY'}</span>
+                <span class="strat-action-strike">${act.strike || '--'}</span>
+                <span class="strat-action-sub" title="${act.sub || ''}">${act.sub || ''}</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // SVG CHART RENDERERS (Dual Mode: Both Total & Change in OI)
+    // ═══════════════════════════════════════════════════════════════════
+    function renderOITimelineSVG(data) {
+      const container = document.getElementById('chart-oi-timeline-wrap');
+      if (!container) return;
+      const w = container.clientWidth || 450;
+      const h = container.clientHeight || 150;
+      const padL = 46, padR = 12, padT = 8, padB = 10;
+      const innerW = Math.max(10, w - padL - padR);
+      const innerH = Math.max(10, h - padT - padB);
+
+      if (!data || data.length === 0) {
+        container.innerHTML = `<svg width="${w}" height="${h}"><text x="${w/2}" y="${h/2}" fill="#64748b" text-anchor="middle" font-size="11">Gathering intraday snapshots...</text></svg>`;
+        return;
+      }
+
+      const n = data.length;
+      const getX = i => padL + (i / Math.max(1, n - 1)) * innerW;
+
+      // ─────────────────────────────────────────────────────────────────
+      // MODE 1: SPLIT (BOTH TOTAL OI & CHANGE IN OI SIMULTANEOUSLY)
+      // ─────────────────────────────────────────────────────────────────
+      if (currentOIGraphMode === 'split') {
+        const gap = 12;
+        const subH = (innerH - gap) / 2;
+
+        // Sub-chart 1: Total Call OI vs Total Put OI (Top)
+        const ceTot = data.map(d => d.ce_oi);
+        const peTot = data.map(d => d.pe_oi);
+        const minTot = Math.min(...ceTot, ...peTot) * 0.98;
+        const maxTot = Math.max(...ceTot, ...peTot) * 1.02;
+        const rangeTot = Math.max(1, maxTot - minTot);
+        const getY1 = val => padT + subH - ((val - minTot) / rangeTot) * subH;
+
+        let ceTotPath = '';
+        let peTotPath = '';
+        data.forEach((d, i) => {
+          const x = getX(i);
+          const yC = getY1(d.ce_oi);
+          const yP = getY1(d.pe_oi);
+          ceTotPath += (i === 0 ? `M ${x} ${yC}` : ` L ${x} ${yC}`);
+          peTotPath += (i === 0 ? `M ${x} ${yP}` : ` L ${x} ${yP}`);
+        });
+
+        // Sub-chart 2: Change in OI (Bottom)
+        const ceChg = data.map(d => d.ce_oi_chg !== undefined ? d.ce_oi_chg : (d.ce_oi_delta || 0));
+        const peChg = data.map(d => d.pe_oi_chg !== undefined ? d.pe_oi_chg : (d.pe_oi_delta || 0));
+        const minChg = Math.min(0, ...ceChg, ...peChg);
+        const maxChg = Math.max(1000, ...ceChg, ...peChg) * 1.05;
+        const rangeChg = Math.max(1, maxChg - minChg);
+        const top2 = padT + subH + gap;
+        const getY2 = val => top2 + subH - ((val - minChg) / rangeChg) * subH;
+
+        let ceChgPath = '';
+        let peChgPath = '';
+        data.forEach((d, i) => {
+          const x = getX(i);
+          const valC = d.ce_oi_chg !== undefined ? d.ce_oi_chg : (d.ce_oi_delta || 0);
+          const valP = d.pe_oi_chg !== undefined ? d.pe_oi_chg : (d.pe_oi_delta || 0);
+          const yC = getY2(valC);
+          const yP = getY2(valP);
+          ceChgPath += (i === 0 ? `M ${x} ${yC}` : ` L ${x} ${yC}`);
+          peChgPath += (i === 0 ? `M ${x} ${yP}` : ` L ${x} ${yP}`);
+        });
+
+        const fmt = v => Math.abs(v) >= 10000000 ? (v / 10000000).toFixed(1) + 'Cr' : (v / 100000).toFixed(0) + 'L';
+
+        const lastD = data[data.length - 1];
+        const lastX = getX(n - 1);
+
+        container.innerHTML = `
+          <svg width="100%" height="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="display: block;">
+            <!-- Top Sub-chart: Total OI -->
+            <text x="${padL}" y="${padT + 7}" fill="#94a3b8" font-size="7.5" font-weight="700">TOTAL OI (SESSION)</text>
+            <line x1="${padL}" y1="${padT}" x2="${w - padR}" y2="${padT}" stroke="rgba(255,255,255,0.05)" />
+            <line x1="${padL}" y1="${padT + subH}" x2="${w - padR}" y2="${padT + subH}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="2,2" />
+            <text x="${padL - 4}" y="${padT + 8}" fill="#64748b" font-size="7.5" text-anchor="end" font-family="'JetBrains Mono', monospace">${fmt(maxTot)}</text>
+            <text x="${padL - 4}" y="${padT + subH}" fill="#64748b" font-size="7.5" text-anchor="end" font-family="'JetBrains Mono', monospace">${fmt(minTot)}</text>
+
+            <path d="${ceTotPath}" fill="none" stroke="#f87171" stroke-width="1.8" stroke-linecap="round" />
+            <path d="${peTotPath}" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" />
+            <circle cx="${lastX}" cy="${getY1(lastD.ce_oi)}" r="2.5" fill="#ef4444" stroke="#fff" stroke-width="0.8" />
+            <circle cx="${lastX}" cy="${getY1(lastD.pe_oi)}" r="2.5" fill="#10b981" stroke="#fff" stroke-width="0.8" />
+
+            <!-- Center Divider -->
+            <line x1="${padL}" y1="${padT + subH + gap/2}" x2="${w - padR}" y2="${padT + subH + gap/2}" stroke="rgba(56, 189, 248, 0.25)" stroke-dasharray="3,3" />
+
+            <!-- Bottom Sub-chart: Change in OI (ΔOI) -->
+            <text x="${padL}" y="${top2 + 7}" fill="#38bdf8" font-size="7.5" font-weight="700">CHANGE IN OI (ΔOI FROM 09:15)</text>
+            <line x1="${padL}" y1="${top2 + subH}" x2="${w - padR}" y2="${top2 + subH}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="2,2" />
+            <text x="${padL - 4}" y="${top2 + 8}" fill="#38bdf8" font-size="7.5" text-anchor="end" font-family="'JetBrains Mono', monospace">+${fmt(maxChg)}</text>
+            <text x="${padL - 4}" y="${top2 + subH}" fill="#64748b" font-size="7.5" text-anchor="end" font-family="'JetBrains Mono', monospace">${fmt(minChg)}</text>
+
+            <path d="${ceChgPath}" fill="none" stroke="#f87171" stroke-width="1.8" stroke-dasharray="3,1" stroke-linecap="round" />
+            <path d="${peChgPath}" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" />
+            <circle cx="${lastX}" cy="${getY2(lastD.ce_oi_chg || lastD.ce_oi_delta || 0)}" r="2.5" fill="#f87171" stroke="#fff" stroke-width="0.8" />
+            <circle cx="${lastX}" cy="${getY2(lastD.pe_oi_chg || lastD.pe_oi_delta || 0)}" r="2.5" fill="#34d399" stroke="#fff" stroke-width="0.8" />
+          </svg>
+        `;
+        return;
+      }
+
+      // ─────────────────────────────────────────────────────────────────
+      // MODE 2: TOTAL OI ONLY OR CHANGE IN OI ONLY
+      // ─────────────────────────────────────────────────────────────────
+      const isTotalMode = (currentOIGraphMode === 'total');
+      const ceList = isTotalMode ? data.map(d => d.ce_oi) : data.map(d => d.ce_oi_chg !== undefined ? d.ce_oi_chg : (d.ce_oi_delta || 0));
+      const peList = isTotalMode ? data.map(d => d.pe_oi) : data.map(d => d.pe_oi_chg !== undefined ? d.pe_oi_chg : (d.pe_oi_delta || 0));
+      const minVal = isTotalMode ? Math.min(...ceList, ...peList) * 0.98 : Math.min(0, ...ceList, ...peList);
+      const maxVal = Math.max(...ceList, ...peList) * 1.02;
+      const valRange = Math.max(1, maxVal - minVal);
+      const getY = val => padT + innerH - ((val - minVal) / valRange) * innerH;
+
+      let cePath = '';
+      let pePath = '';
+      data.forEach((d, i) => {
+        const x = getX(i);
+        const valC = isTotalMode ? d.ce_oi : (d.ce_oi_chg !== undefined ? d.ce_oi_chg : (d.ce_oi_delta || 0));
+        const valP = isTotalMode ? d.pe_oi : (d.pe_oi_chg !== undefined ? d.pe_oi_chg : (d.pe_oi_delta || 0));
+        const yCe = getY(valC);
+        const yPe = getY(valP);
+        cePath += (i === 0 ? `M ${x} ${yCe}` : ` L ${x} ${yCe}`);
+        pePath += (i === 0 ? `M ${x} ${yPe}` : ` L ${x} ${yPe}`);
+      });
+
+      const gridCount = 3;
+      let gridSvg = '';
+      for (let i = 0; i <= gridCount; i++) {
+        const y = padT + (i / gridCount) * innerH;
+        const v = maxVal - (i / gridCount) * valRange;
+        const vStr = Math.abs(v) >= 10000000 ? (v / 10000000).toFixed(1) + 'Cr' : (v / 100000).toFixed(0) + 'L';
+        gridSvg += `
+          <line x1="${padL}" y1="${y}" x2="${w - padR}" y2="${y}" stroke="rgba(255,255,255,0.05)" stroke-dasharray="2,2" />
+          <text x="${padL - 4}" y="${y + 3}" fill="#64748b" font-size="8" text-anchor="end" font-family="'JetBrains Mono', monospace">${vStr}</text>
+        `;
+      }
+
+      const lastD = data[data.length - 1];
+      const lastCVal = isTotalMode ? lastD.ce_oi : (lastD.ce_oi_chg !== undefined ? lastD.ce_oi_chg : (lastD.ce_oi_delta || 0));
+      const lastPVal = isTotalMode ? lastD.pe_oi : (lastD.pe_oi_chg !== undefined ? lastD.pe_oi_chg : (lastD.pe_oi_delta || 0));
+      const lastX = getX(n - 1);
+
+      container.innerHTML = `
+        <svg width="100%" height="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="display: block;">
+          ${gridSvg}
+          <path d="${cePath}" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" />
+          <path d="${pePath}" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" />
+          
+          <circle cx="${lastX}" cy="${getY(lastCVal)}" r="3" fill="#ef4444" stroke="#fff" stroke-width="1" />
+          <circle cx="${lastX}" cy="${getY(lastPVal)}" r="3" fill="#10b981" stroke="#fff" stroke-width="1" />
+        </svg>
+      `;
+    }
+
+    function renderNetDiffSVG(data) {
+      const container = document.getElementById('chart-net-diff-wrap');
+      if (!container) return;
+      const w = container.clientWidth || 320;
+      const h = container.clientHeight || 150;
+      const padL = 42, padR = 10, padT = 8, padB = 10;
+      const innerW = Math.max(10, w - padL - padR);
+      const innerH = Math.max(10, h - padT - padB);
+
+      if (!data || data.length === 0) {
+        container.innerHTML = `<svg width="${w}" height="${h}"><text x="${w/2}" y="${h/2}" fill="#64748b" text-anchor="middle" font-size="11">Gathering Net OI snapshots...</text></svg>`;
+        return;
+      }
+
+      const diffList = data.map(d => d.net_diff);
+      const maxAbs = Math.max(1, Math.max(...diffList.map(v => Math.abs(v)))) * 1.1;
+
+      const n = data.length;
+      const getX = i => padL + (i / Math.max(1, n - 1)) * innerW;
+      const zeroY = padT + innerH / 2;
+      const getY = val => zeroY - (val / maxAbs) * (innerH / 2);
+
+      let barsSvg = '';
+      const barW = Math.max(1.2, (innerW / n) * 0.7);
+
+      data.forEach((d, i) => {
+        const x = getX(i) - barW / 2;
+        const val = d.net_diff;
+        const isBull = val >= 0;
+        const yTop = isBull ? getY(val) : zeroY;
+        const barH = Math.max(1, Math.abs(zeroY - getY(val)));
+        const color = isBull ? 'rgba(52, 211, 153, 0.7)' : 'rgba(248, 113, 113, 0.7)';
+
+        barsSvg += `<rect x="${x}" y="${yTop}" width="${barW}" height="${barH}" fill="${color}" rx="0.5" />`;
+      });
+
+      let linePath = '';
+      data.forEach((d, i) => {
+        const x = getX(i);
+        const y = getY(d.net_diff);
+        linePath += (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
+      });
+
+      const maxStr = maxAbs >= 10000000 ? (maxAbs / 10000000).toFixed(1) + 'Cr' : (maxAbs / 100000).toFixed(0) + 'L';
+
+      container.innerHTML = `
+        <svg width="100%" height="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="display: block;">
+          <!-- Zero Line -->
+          <line x1="${padL}" y1="${zeroY}" x2="${w - padR}" y2="${zeroY}" stroke="rgba(255,255,255,0.18)" stroke-dasharray="2,2" />
+          <text x="${padL - 4}" y="${zeroY + 3}" fill="#94a3b8" font-size="7.5" text-anchor="end" font-family="'JetBrains Mono', monospace">0</text>
+          <text x="${padL - 4}" y="${padT + 4}" fill="#34d399" font-size="7.5" text-anchor="end" font-family="'JetBrains Mono', monospace">+${maxStr}</text>
+          <text x="${padL - 4}" y="${h - padB + 1}" fill="#f87171" font-size="7.5" text-anchor="end" font-family="'JetBrains Mono', monospace">-${maxStr}</text>
+
+          ${barsSvg}
+          <path d="${linePath}" fill="none" stroke="#f1f5f9" stroke-width="1.4" />
+        </svg>
+      `;
+
+      // Update Panel 2 Bottom Statistics (Volume Flow & Velocity)
+      const lastPt = data[data.length - 1];
+      const prevPt = data.length >= 2 ? data[data.length - 2] : lastPt;
+      const vel1m = lastPt.net_diff - prevPt.net_diff;
+      const velStr = Math.abs(vel1m) >= 100000 ? (vel1m / 100000).toFixed(1) + 'L/1m' : (vel1m / 1000).toFixed(0) + 'K/1m';
+
+      const totCeVol = data.reduce((acc, pt) => acc + (pt.ce_vol || 0), 0);
+      const totPeVol = data.reduce((acc, pt) => acc + (pt.pe_vol || 0), 0);
+      const totVol = totCeVol + totPeVol;
+      const pePct = totVol > 0 ? Math.round((totPeVol / totVol) * 100) : 52;
+      const cePct = 100 - pePct;
+
+      const lblCe = document.getElementById('lbl-ce-vol');
+      const lblPe = document.getElementById('lbl-pe-vol');
+      const barFill = document.getElementById('bar-pe-vol-fill');
+      const speedEl = document.getElementById('net-shift-speed');
+
+      if (lblCe) lblCe.textContent = `CE Vol: ${cePct}%`;
+      if (lblPe) lblPe.textContent = `PE Vol: ${pePct}%`;
+      if (barFill) barFill.style.width = `${pePct}%`;
+      if (speedEl) {
+        speedEl.innerHTML = `Δ1m: <span style="color: ${vel1m >= 0 ? '#34d399' : '#f87171'};">${vel1m >= 0 ? '▲ +' : '▼ '}${velStr}</span>`;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // INSTITUTIONAL FORTRESS & STRIKE LAB PARAMETERS PANEL
+    // ═══════════════════════════════════════════════════════════════════
+    function updateInstitutionalPanel(params) {
+      // Maintained for backward compatibility with timeseries hook
+    }
+
+    function setPanel3Tab(tab) {
+      // Maintained for backward compatibility
+    }
+
+    function renderDivergenceRibbon(divData) {
+      if (!divData) return;
+      const headlineEl = document.getElementById('div-headline-text');
+      const pulseEl = document.getElementById('div-radar-pulse-dot');
+      const rankingsContainer = document.getElementById('rs-rankings-container');
+
+      const status = divData.status || 'BALANCED';
+      let pulseColor = '#38bdf8';
+      let textColor = '#f1f5f9';
+
+      if (status === 'DIVERGENCE') {
+        pulseColor = '#f59e0b';
+        textColor = '#fbbf24';
+      } else if (status === 'SYNCHRONIZED_BULL') {
+        pulseColor = '#10b981';
+        textColor = '#34d399';
+      } else if (status === 'SYNCHRONIZED_BEAR') {
+        pulseColor = '#ef4444';
+        textColor = '#f87171';
+      }
+
+      if (pulseEl) pulseEl.style.background = pulseColor;
+      if (headlineEl) {
+        headlineEl.innerHTML = `<span style="color: ${textColor};">${divData.headline || '⚖️ BALANCED ROTATION'}</span> <span style="color: #64748b; font-weight: 500;">— ${divData.description || ''}</span>`;
+      }
+
+      if (rankingsContainer && divData.rankings) {
+        let rHtml = '<span style="color: #64748b; font-size: 8px; margin-right: 3px;">REL STRENGTH:</span>';
+        divData.rankings.forEach((r, idx) => {
+          const isAct = r.symbol === currentActiveSymbol;
+          rHtml += `
+            <span class="rs-pill ${r.color || 'yellow'}" style="${isAct ? 'border: 1px solid #ffffff; font-weight: 900;' : ''}" onclick="selectIndex('${r.symbol}')" title="${r.symbol} Relative Strength: ${r.rel_strength} (${r.label})">
+              ${idx + 1}. ${r.symbol} ${r.rel_strength.toFixed(0)}
+            </span>
+          `;
+        });
+        rankingsContainer.innerHTML = rHtml;
+      }
+    }
+
+    function round1(v) {
+      return Math.round(v * 10) / 10;
+    }
+
+    // Keep legacy alias
+    function updateAnchorsPanel(anchors) {
+      updateInstitutionalPanel(anchors);
+    }
+  </script>
+</body>
+</html>
+

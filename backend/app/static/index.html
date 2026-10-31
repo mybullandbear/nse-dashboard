@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>mybullandbear | Centralized Institutional NSE Options &amp; Signal Terminal</title>
+  <meta name="description" content="mybullandbear - Centralized decision support & algorithmic trading terminal for NSE index options.">
+
+  <!-- PWA & Mobile Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0ea5e9">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MyBullAndBear">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2620/2620610.png">
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Terminal Stylesheets -->
+  <link rel="stylesheet" href="/static/css/theme.css?v=6.0.0">
+  <link rel="stylesheet" href="/static/css/terminal.css?v=5.4.0">
+  <link rel="stylesheet" href="/static/css/mobile.css?v=2.3.0">
+
+  <!-- TradingView Lightweight Charts (v4.2.0 pinned) -->
+  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+  <script>
+    if (typeof LightweightCharts === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"><\/script>');
+    }
+  </script>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Mobile PWA Quick-Install Banner -->
+    <div id="pwa-install-banner" class="pwa-install-banner">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 20px;">📲</span>
+        <div>
+          <strong style="font-size: 12px; color: #f8fafc;">Install MyBullAndBear PWA</strong>
+          <div style="font-size: 10px; color: #94a3b8;">Add to your phone home screen for full-screen trading</div>
+        </div>
+      </div>
+      <button id="pwa-install-btn" style="background: #0ea5e9; color: white; border: none; font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 6px; cursor: pointer;">
+        INSTALL
+      </button>
+    </div>
+
+    <!-- Header Mount -->
+    <div id="header-mount"></div>
+
+    <!-- Main Workspace -->
+    <main class="main-content">
+      <!-- Master Multi-Index Alignment Matrix & Real-Time Telemetry Bar -->
+      <div id="directional-weightage-mount"></div>
+
+      <!-- Master Whole-Day Replay & Time-Travel Controller -->
+      <div id="master-replay-mount"></div>
+
+      <!-- Desktop Navigation Tabs (The 5 Core Modules) -->
+      <nav class="terminal-tabs desktop-tabs" aria-label="Terminal Navigation">
+        <button class="tab-btn active" data-tab="dashboard">
+          <span class="tab-icon">⚡</span>
+          <span>5-INDEX DASHBOARD</span>
+        </button>
+        <button class="tab-btn" data-tab="option-confluence">
+          <span class="tab-icon">🎯</span>
+          <span>OPTION CONFLUENCE</span>
+        </button>
+        <button class="tab-btn" data-tab="shonya-terminal">
+          <span class="tab-icon">🤖</span>
+          <span>SHONYA BOT &amp; TERMINAL</span>
+        </button>
+        <button class="tab-btn" data-tab="oi-analytics">
+          <span class="tab-icon">📊</span>
+          <span>CALL vs PUT OI</span>
+        </button>
+        <button class="tab-btn" data-tab="chain">
+          <span class="tab-icon">⛓️</span>
+          <span>OPTION CHAIN MATRIX</span>
+        </button>
+      </nav>
+
+      <!-- Active View Mount Point -->
+      <div id="content-mount"></div>
+    </main>
+
+    <!-- Modal Mount for Candlestick Charts & Orders -->
+    <div id="modal-mount"></div>
+  </div>
+
+  <!-- Mobile Bottom Sticky Navigation Bar (5 Core Modules) -->
+  <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+    <button class="nav-item active" data-tab="dashboard">
+      <span class="icon">⚡</span>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-item" data-tab="option-confluence">
+      <span class="icon">🎯</span>
+      <span>Confluence</span>
+    </button>
+    <button class="nav-item" data-tab="shonya-terminal">
+      <span class="icon">🤖</span>
+      <span>Bot</span>
+    </button>
+    <button class="nav-item" data-tab="oi-analytics">
+      <span class="icon">📊</span>
+      <span>OI Flow</span>
+    </button>
+    <button class="nav-item" data-tab="chain">
+      <span class="icon">⛓️</span>
+      <span>Chain</span>
+    </button>
+  </nav>
+
+  <!-- ES6 Modular Application Orchestrator -->
+  <script type="module" src="/static/js/app.js?v=6.0.0"></script>
+</body>
+</html>

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture Knowledge Graph | mybullandbear</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #080c14;
+      color: #f1f5f9;
+      font-family: 'Inter', -apple-system, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #10b981, #0ea5e9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+    }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+    .brand-subtitle {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38bdf8;
+      color: #fff;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      border-color: #38bdf8;
+      color: #fff;
+    }
+    .main-wrap {
+      flex: 1;
+      position: relative;
+      display: flex;
+    }
+    #graph-container {
+      flex: 1;
+      height: 100%;
+      background: radial-gradient(circle at 50% 50%, #0f172a 0%, #080c14 80%);
+    }
+    .controls-panel {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 14px;
+      width: 290px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 5;
+    }
+    .search-box {
+      width: 100%;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 12px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    .search-box:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56,189,248,0.3);
+    }
+    .layer-filters {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .layer-chip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .layer-chip:hover, .layer-chip.active {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    .layer-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+    }
+    .sidebar {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 360px;
+      max-height: calc(100% - 32px);
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+      overflow-y: auto;
+      z-index: 5;
+      display: none;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .tour-banner {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #38bdf8;
+      border-radius: 10px;
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 5;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px rgba(56,189,248,0.25);
+    }
+    .tooltip {
+      position: absolute;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 11px;
+      pointer-events: none;
+      display: none;
+      z-index: 20;
+    }
+    line.link {
+      stroke: rgba(255, 255, 255, 0.15);
+      stroke-width: 1.2px;
+      transition: stroke 0.2s, stroke-width 0.2s;
+    }
+    line.link.highlighted {
+      stroke: #38bdf8;
+      stroke-width: 2.5px;
+    }
+    circle.node {
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    circle.node:hover {
+      filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.8));
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-logo">🕸️</div>
+      <div>
+        <div class="brand-title">NSE OPTIONS DASHBOARD — ARCHITECTURE GRAPH</div>
+        <div class="brand-subtitle">Automated Knowledge Graph &amp; Interconnected Dependency Pipeline</div>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button class="btn" id="btn-reset-view">🎯 Reset Zoom</button>
+      <button class="btn" id="btn-start-tour">🧭 Guided Tour</button>
+      <a href="/" class="btn btn-primary">⚡ Open Trading Terminal</a>
+      <a href="/dashboard" class="btn">📊 5-Index Matrix</a>
+    </div>
+  </header>
+
+  <div class="main-wrap">
+    <!-- Controls Panel -->
+    <div class="controls-panel">
+      <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px;">Search Modules</div>
+      <input type="text" class="search-box" id="node-search" placeholder="Search service, bot, or file...">
+      
+      <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px;">Architecture Layers</div>
+      <div class="layer-filters" id="layer-filters"></div>
+      
+      <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 10px; color: #64748b; line-height: 1.4;">
+        💡 Click any node to inspect dependencies, imports, and functions. Drag to reposition.
+      </div>
+    </div>
+
+    <!-- Graph Container -->
+    <svg id="graph-container"></svg>
+
+    <!-- Node Detail Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div>
+          <span class="badge" id="side-layer" style="font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 800; background: #334155; color: #cbd5e1;">LAYER</span>
+          <h3 id="side-name" style="font-size: 16px; font-weight: 800; color: #f8fafc; margin-top: 4px;">Node Name</h3>
+        </div>
+        <button id="side-close" style="background: transparent; border: none; color: #94a3b8; font-size: 18px; cursor: pointer;">✕</button>
+      </div>
+      <div style="font-size: 11px; color: #94a3b8; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;" id="side-path">path/to/file</div>
+      <p id="side-summary" style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 16px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);"></p>
+      
+      <div style="margin-bottom: 14px;">
+        <div style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Outgoing Dependencies / Calls</div>
+        <div id="side-outgoing" style="font-size: 11px; display: flex; flex-direction: column; gap: 4px;"></div>
+      </div>
+
+      <div>
+        <div style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Incoming Consumers / Callers</div>
+        <div id="side-incoming" style="font-size: 11px; display: flex; flex-direction: column; gap: 4px;"></div>
+      </div>
+    </div>
+
+    <!-- Guided Tour Overlay -->
+    <div class="tour-banner" id="tour-banner" style="display: none;">
+      <div>
+        <div style="font-size: 10px; font-weight: 800; color: #38bdf8; text-transform: uppercase;" id="tour-step-counter">STEP 1 OF 5</div>
+        <div style="font-size: 14px; font-weight: 800; color: #fff;" id="tour-title">Market Ingestion</div>
+        <div style="font-size: 11px; color: #cbd5e1; max-width: 450px; margin-top: 2px;" id="tour-desc">Description</div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn" id="tour-prev">Previous</button>
+        <button class="btn btn-primary" id="tour-next">Next</button>
+        <button class="btn" id="tour-close" style="background: rgba(239,68,68,0.2); border-color: #ef4444; color: #f87171;">Exit</button>
+      </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+  </div>
+
+  <script>
+    let graphData = null;
+    let simulation = null;
+    let svg, g, linkElements, nodeElements, textElements;
+    let zoomBehavior;
+    let activeLayerFilter = new Set();
+    let tourStep = 0;
+
+    const LAYER_COLORS = {
+      'Frontend User Interface': '#38bdf8',
+      'API & Gateway Layer': '#818cf8',
+      'Algorithmic Execution & Bot Layer': '#f43f5e',
+      'Quantitative & Indicator Engines': '#10b981',
+      'Market Data & Broker Connectivity': '#f59e0b',
+      'Core Engine & Configuration': '#94a3b8',
+      'Core / Utility': '#64748b'
+    };
+
+    async function init() {
+      try {
+        const res = await fetch('/api/architecture/graph');
+        graphData = await res.json();
+      } catch (e) {
+        console.warn('Fallback loading graph data directly...');
+        // fallback
+        const res = await fetch('/static/knowledge-graph.json');
+        graphData = await res.json();
+      }
+
+      renderControls();
+      renderGraph();
+      setupTour();
+    }
+
+    function renderControls() {
+      const container = document.getElementById('layer-filters');
+      container.innerHTML = '';
+
+      const layers = graphData.layers || [];
+      layers.forEach(l => {
+        activeLayerFilter.add(l.name);
+        const count = graphData.nodes.filter(n => (n.layer || '') === l.name).length;
+        
+        const chip = document.createElement('div');
+        chip.className = 'layer-chip active';
+        chip.innerHTML = `
+          <div style="display: flex; align-items: center;">
+            <span class="layer-dot" style="background: ${l.color};"></span>
+            <span>${l.name}</span>
+          </div>
+          <span style="font-size: 10px; color: #94a3b8; font-weight: 800;">${count}</span>
+        `;
+        chip.addEventListener('click', () => {
+          if (activeLayerFilter.has(l.name)) {
+            activeLayerFilter.delete(l.name);
+            chip.classList.remove('active');
+          } else {
+            activeLayerFilter.add(l.name);
+            chip.classList.add('active');
+          }
+          applyFilter();
+        });
+        container.appendChild(chip);
+      });
+
+      document.getElementById('node-search').addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        nodeElements.attr('opacity', d => {
+          if (!query) return 1;
+          const match = d.name.toLowerCase().includes(query) || (d.summary || '').toLowerCase().includes(query) || (d.filePath || '').toLowerCase().includes(query);
+          return match ? 1 : 0.15;
+        });
+        textElements.attr('opacity', d => {
+          if (!query) return 1;
+          return d.name.toLowerCase().includes(query) ? 1 : 0.15;
+        });
+      });
+
+      document.getElementById('btn-reset-view').addEventListener('click', () => {
+        svg.transition().duration(750).call(zoomBehavior.transform, d3.zoomIdentity);
+      });
+      document.getElementById('side-close').addEventListener('click', () => {
+        document.getElementById('sidebar').style.display = 'none';
+      });
+    }
+
+    function renderGraph() {
+      const svgEl = d3.select('#graph-container');
+      const width = window.innerWidth;
+      const height = window.innerHeight - 60;
+      svg = svgEl;
+
+      svgEl.selectAll('*').remove();
+      g = svgEl.append('g');
+
+      zoomBehavior = d3.zoom()
+        .scaleExtent([0.15, 3.5])
+        .on('zoom', (event) => g.attr('transform', event.transform));
+      svgEl.call(zoomBehavior);
+
+      // Arrow markers
+      svgEl.append('defs').selectAll('marker')
+        .data(['arrow'])
+        .enter().append('marker')
+        .attr('id', 'arrow')
+        .attr('viewBox', '0 -5 10 10')
+        .attr('refX', 22)
+        .attr('refY', 0)
+        .attr('markerWidth', 6)
+        .attr('markerHeight', 6)
+        .attr('orient', 'auto')
+        .append('path')
+        .attr('d', 'M0,-5L10,0L0,5')
+        .attr('fill', 'rgba(255, 255, 255, 0.3)');
+
+      const links = graphData.edges.map(d => Object.assign({}, d));
+      const nodes = graphData.nodes.map(d => Object.assign({}, d));
+
+      simulation = d3.forceSimulation(nodes)
+        .force('link', d3.forceLink(links).id(d => d.id).distance(90))
+        .force('charge', d3.forceManyBody().strength(-280))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force('collision', d3.forceCollide().radius(28));
+
+      linkElements = g.append('g')
+        .attr('class', 'links')
+        .selectAll('line')
+        .data(links)
+        .enter().append('line')
+        .attr('class', 'link')
+        .attr('marker-end', 'url(#arrow)');
+
+      nodeElements = g.append('g')
+        .attr('class', 'nodes')
+        .selectAll('circle')
+        .data(nodes)
+        .enter().append('circle')
+        .attr('class', 'node')
+        .attr('r', d => d.type === 'file' ? 10 : (d.type === 'class' ? 8 : 6))
+        .attr('fill', d => LAYER_COLORS[d.layer] || '#64748b')
+        .attr('stroke', '#080c14')
+        .attr('stroke-width', 2)
+        .call(d3.drag()
+          .on('start', dragstarted)
+          .on('drag', dragged)
+          .on('end', dragended))
+        .on('click', (event, d) => showNodeDetails(d))
+        .on('mouseover', (event, d) => {
+          const tt = document.getElementById('tooltip');
+          tt.style.display = 'block';
+          tt.style.left = (event.pageX + 12) + 'px';
+          tt.style.top = (event.pageY + 12) + 'px';
+          tt.innerHTML = `<strong>${d.name}</strong><br><span style="color:#94a3b8">${d.layer || d.type}</span>`;
+        })
+        .on('mouseout', () => {
+          document.getElementById('tooltip').style.display = 'none';
+        });
+
+      textElements = g.append('g')
+        .attr('class', 'labels')
+        .selectAll('text')
+        .data(nodes)
+        .enter().append('text')
+        .text(d => d.name)
+        .attr('font-size', '10px')
+        .attr('fill', '#94a3b8')
+        .attr('dx', 14)
+        .attr('dy', 4)
+        .attr('pointer-events', 'none')
+        .style('font-family', 'JetBrains Mono, monospace');
+
+      simulation.on('tick', () => {
+        linkElements
+          .attr('x1', d => d.source.x)
+          .attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x)
+          .attr('y2', d => d.target.y);
+
+        nodeElements
+          .attr('cx', d => d.x)
+          .attr('cy', d => d.y);
+
+        textElements
+          .attr('x', d => d.x)
+          .attr('y', d => d.y);
+      });
+    }
+
+    function applyFilter() {
+      nodeElements.attr('display', d => activeLayerFilter.has(d.layer) ? null : 'none');
+      textElements.attr('display', d => activeLayerFilter.has(d.layer) ? null : 'none');
+      linkElements.attr('display', d => {
+        const srcVisible = activeLayerFilter.has(d.source.layer);
+        const tgtVisible = activeLayerFilter.has(d.target.layer);
+        return srcVisible && tgtVisible ? null : 'none';
+      });
+    }
+
+    function showNodeDetails(d) {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.style.display = 'block';
+
+      document.getElementById('side-name').innerText = d.name;
+      document.getElementById('side-path').innerText = d.filePath || d.id;
+      document.getElementById('side-summary').innerText = d.summary || 'No documentation provided.';
+      
+      const layerBadge = document.getElementById('side-layer');
+      layerBadge.innerText = d.layer || d.type;
+      layerBadge.style.background = LAYER_COLORS[d.layer] || '#334155';
+
+      // Outgoing
+      const outList = graphData.edges.filter(e => (e.source.id || e.source) === d.id);
+      const outContainer = document.getElementById('side-outgoing');
+      outContainer.innerHTML = outList.length ? outList.map(e => {
+        const tgt = e.target.name || e.target.id || e.target;
+        return `<div style="background: rgba(255,255,255,0.04); padding: 4px 8px; border-radius: 4px; border-left: 2px solid #38bdf8;">${tgt} <span style="color:#64748b; font-size:9.5px;">(${e.type || 'imports'})</span></div>`;
+      }).join('') : '<span style="color:#64748b;">None</span>';
+
+      // Incoming
+      const inList = graphData.edges.filter(e => (e.target.id || e.target) === d.id);
+      const inContainer = document.getElementById('side-incoming');
+      inContainer.innerHTML = inList.length ? inList.map(e => {
+        const src = e.source.name || e.source.id || e.source;
+        return `<div style="background: rgba(255,255,255,0.04); padding: 4px 8px; border-radius: 4px; border-left: 2px solid #10b981;">${src} <span style="color:#64748b; font-size:9.5px;">(${e.type || 'calls'})</span></div>`;
+      }).join('') : '<span style="color:#64748b;">None</span>';
+
+      // Highlight connections
+      linkElements.classed('highlighted', e => (e.source.id === d.id || e.target.id === d.id));
+    }
+
+    function setupTour() {
+      const tour = graphData.tour || [];
+      if (!tour.length) return;
+
+      const banner = document.getElementById('tour-banner');
+      const titleEl = document.getElementById('tour-title');
+      const descEl = document.getElementById('tour-desc');
+      const counterEl = document.getElementById('tour-step-counter');
+
+      function showStep(idx) {
+        tourStep = Math.max(0, Math.min(tour.length - 1, idx));
+        const step = tour[tourStep];
+        counterEl.innerText = `STEP ${tourStep + 1} OF ${tour.length}`;
+        titleEl.innerText = step.title;
+        descEl.innerText = step.description;
+
+        const targetNode = graphData.nodes.find(n => n.id === step.targetNodeId);
+        if (targetNode && simulation) {
+          showNodeDetails(targetNode);
+          svg.transition().duration(750).call(
+            zoomBehavior.transform,
+            d3.zoomIdentity.translate(window.innerWidth / 2 - targetNode.x * 1.5, (window.innerHeight - 60) / 2 - targetNode.y * 1.5).scale(1.5)
+          );
+        }
+      }
+
+      document.getElementById('btn-start-tour').addEventListener('click', () => {
+        banner.style.display = 'flex';
+        showStep(0);
+      });
+      document.getElementById('tour-next').addEventListener('click', () => showStep(tourStep + 1));
+      document.getElementById('tour-prev').addEventListener('click', () => showStep(tourStep - 1));
+      document.getElementById('tour-close').addEventListener('click', () => {
+        banner.style.display = 'none';
+        linkElements.classed('highlighted', false);
+      });
+    }
+
+    function dragstarted(event, d) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+    function dragged(event, d) {
+      d.fx = event.x;
+      d.fy = event.y;
+    }
+    function dragended(event, d) {
+      if (!event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
