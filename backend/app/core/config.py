@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "mybullandbear - Institutional NSE Options & Signal Command Center"
     VERSION: str = "2.0.0-centralized"
     API_PREFIX: str = "/api"
-    DEBUG: bool = True
+    DEBUG: bool = False
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     
@@ -55,10 +55,10 @@ class Settings(BaseSettings):
         "SENSEX": "Thursday (Weekly/Monthly)",
     }
     
-    # Fyers OAuth Defaults
-    FYERS_CLIENT_ID: str = "7BRKBHOFP8-100"
-    FYERS_SECRET_KEY: str = "TO0QPDNH7A"
-    FYERS_REDIRECT_URI: str = "http://137.23.42.11:8000/api/fyers/callback"
+    # Secrets must be configured through environment variables; never commit real values.\n    TRADINGVIEW_WEBHOOK_SECRET: str = ""\n    LIVE_TRADING_ENABLED: bool = False\n\n    # Fyers OAuth Defaults
+    FYERS_CLIENT_ID: str = ""
+    FYERS_SECRET_KEY: str = ""
+    FYERS_REDIRECT_URI: str = ""
     
     # Engine Refresh Cycles (Optimized for Fyers Prime)
     INDEX_TICK_INTERVAL_SEC: float = 1.0       # 1-second batch quote pull
