@@ -12,6 +12,11 @@ Verifies:
 9. Deterministic replay from saved predictions.
 10. Production broker-routing and baseline isolation.
 """
+from pathlib import Path as _Path
+import pytest as _pytest
+if not (_Path(__file__).resolve().parents[3] / "traning dataset").exists():
+    _pytest.skip("Research datasets/models are not included in this repository", allow_module_level=True)
+
 import os
 import sys
 import unittest

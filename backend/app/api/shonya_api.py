@@ -36,9 +36,9 @@ class BotModeRequest(BaseModel):
 
 
 class ManualTradeRequest(BaseModel):
-    symbol: str = Field(..., example="NIFTY")
-    strike: float = Field(..., example=22600.0)
-    option_type: str = Field(..., example="CE")
+    symbol: str = Field(..., json_schema_extra={"example": "NIFTY"})
+    strike: float = Field(..., json_schema_extra={"example": 22600.0})
+    option_type: str = Field(..., json_schema_extra={"example": "CE"})
     lots: int = Field(1, ge=1, le=10)
     entry_price: Optional[float] = None
     target1: Optional[float] = None
@@ -54,7 +54,7 @@ class ModifyTradeRequest(BaseModel):
 
 
 class GrokExecuteRequest(BaseModel):
-    symbol: str = Field("NIFTY", example="NIFTY")
+    symbol: str = Field("NIFTY", json_schema_extra={"example": "NIFTY"})
 
 
 class MultiIndexMarketViewRequest(BaseModel):
@@ -94,9 +94,7 @@ async def set_shonya_mode(req: BotModeRequest):
         raise HTTPException(status_code=400, detail="Mode must be 'PAPER' or 'LIVE'")
     
     if mode == "LIVE":
-        ok, msg = fyers_service.validate_connection()
-        if not ok:
-            raise HTTPException(status_code=400, detail=f"Cannot enable LIVE mode: Fyers not connected ({msg})")
+        raise HTTPException(status_code=403, detail="Live trading is disabled in this build")
 
     current_mode = shonya_bot.set_mode(mode)
     return {

@@ -8,6 +8,5 @@ python-dotenv>=1.0.1
 numpy>=1.26.0
 scipy>=1.14.0
 pandas>=2.2.0
-fyers-apiv3>=3.0.0
 curl_cffi>=0.7.0
-requests>=2.31.0
+requests>=2.33.0

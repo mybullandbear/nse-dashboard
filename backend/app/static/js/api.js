@@ -6,25 +6,23 @@ export const ApiClient = {
   baseUrl: window.location.origin,
 
   _getAuthHeaders() {
-    const token = localStorage.getItem('terminal_access_token') || sessionStorage.getItem('terminal_access_token');
-    const headers = {};
-    if (token) {
-      headers['X-Access-Token'] = token;
-    }
-    return headers;
+    return {};
   },
 
   async get(endpoint) {
     try {
       const headers = this._getAuthHeaders();
-      const res = await fetch(`${this.baseUrl}${endpoint}`, { headers });
+      const res = await fetch(`${this.baseUrl}${endpoint}`, { headers, signal: AbortSignal.timeout(15000) });
       if (res.status === 401 && !endpoint.startsWith('/api/access/')) {
         window.dispatchEvent(new CustomEvent('terminal:unauthorized'));
         throw new Error('Unauthorized');
       }
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      return await res.json();
+      const data = await res.json();
+      if (endpoint.startsWith('/api/market/') && data.source) window.dispatchEvent(new CustomEvent('terminal:data-status', {detail:{source:data.source,age:data.cache_age_seconds}}));
+      return data;
     } catch (err) {
+      if (endpoint.startsWith("/api/market/")) window.dispatchEvent(new CustomEvent("terminal:data-status", {detail:{error:true}}));
       console.warn(`API GET error on ${endpoint}:`, err);
       return null;
     }
@@ -35,6 +33,7 @@ export const ApiClient = {
       const headers = { 'Content-Type': 'application/json', ...this._getAuthHeaders() };
       const res = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'POST',
+        signal: AbortSignal.timeout(15000),
         headers,
         body: JSON.stringify(data),
       });
@@ -59,7 +58,7 @@ export const ApiClient = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
-        password: password.trim(),
+        password: password,
         remember_device: !!rememberDevice 
       })
     });
@@ -67,24 +66,13 @@ export const ApiClient = {
     if (!res.ok) {
       throw new Error(data.detail || 'Invalid access key.');
     }
-    if (data.token) {
-      if (rememberDevice) {
-        localStorage.setItem('terminal_access_token', data.token);
-        localStorage.setItem('terminal_device_trusted', 'true');
-        sessionStorage.removeItem('terminal_access_token');
-      } else {
-        sessionStorage.setItem('terminal_access_token', data.token);
-        localStorage.removeItem('terminal_access_token');
-        localStorage.removeItem('terminal_device_trusted');
-      }
-    }
     return data;
   },
 
   async checkAccess() {
     try {
       const headers = this._getAuthHeaders();
-      const res = await fetch(`${this.baseUrl}/api/access/check`, { headers });
+      const res = await fetch(`${this.baseUrl}/api/access/check`, { headers, signal: AbortSignal.timeout(15000) });
       if (!res.ok) return false;
       const data = await res.json();
       return !!data.authenticated;
@@ -348,6 +336,10 @@ export class StreamClient {
     this.ws = null;
     this.activeSymbol = 'NIFTY';
     this.reconnectTimer = null;
+    this.retryCount = 0;
+    window.addEventListener('terminal:unlocked', () => {
+      if (!this.ws || this.ws.readyState > WebSocket.OPEN) this.connect();
+    });
   }
 
   connect() {
@@ -358,6 +350,7 @@ export class StreamClient {
       this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = () => {
+        this.retryCount = 0;
         if (this.onStatusChange) this.onStatusChange(true);
         this.subscribe(this.activeSymbol);
       };
@@ -371,8 +364,9 @@ export class StreamClient {
         }
       };
 
-      this.ws.onclose = () => {
+      this.ws.onclose = (event) => {
         if (this.onStatusChange) this.onStatusChange(false);
+        if (event.code === 1008) { window.dispatchEvent(new CustomEvent("terminal:unauthorized")); return; }
         this.scheduleReconnect();
       };
 
@@ -393,6 +387,6 @@ export class StreamClient {
 
   scheduleReconnect() {
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
-    this.reconnectTimer = setTimeout(() => this.connect(), 3000);
+    this.reconnectTimer = setTimeout(() => this.connect(), Math.min(30000, 1000 * 2 ** this.retryCount++) + Math.random() * 1000);
   }
 }

@@ -4,20 +4,27 @@ Application Configuration and Settings
 import os
 from functools import lru_cache
 from typing import List, Dict
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "mybullandbear - Institutional NSE Options & Signal Command Center"
     APP_NAME: str = "mybullandbear - Institutional NSE Options & Signal Command Center"
     VERSION: str = "2.0.0-centralized"
     API_PREFIX: str = "/api"
-    DEBUG: bool = True
+    DEBUG: bool = False
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     
     POLL_INTERVAL_LIVE: float = 1.5
     POLL_INTERVAL_OFF_MARKET: float = 10.0
     
+    TERMINAL_PASSWORD: str = ""
+    SESSION_TTL_SEC: int = Field(28800, ge=60, le=86400)
+    COOKIE_SECURE: bool = True
+    ALLOWED_ORIGINS: List[str] = []
+    TRADINGVIEW_WEBHOOK_SECRET: str = ""
+
     # Fyers Prime Configuration
     FYERS_TIER: str = "PRIME"  # "PRIME" removes 50 req/min limit, allows 200 req/min & 100k daily calls
     FYERS_PRIME_RATE_LIMIT_PER_MIN: int = 200
@@ -56,9 +63,9 @@ class Settings(BaseSettings):
     }
     
     # Fyers OAuth Defaults
-    FYERS_CLIENT_ID: str = "7BRKBHOFP8-100"
-    FYERS_SECRET_KEY: str = "TO0QPDNH7A"
-    FYERS_REDIRECT_URI: str = "http://137.23.42.11:8000/api/fyers/callback"
+    FYERS_CLIENT_ID: str = ""
+    FYERS_SECRET_KEY: str = ""
+    FYERS_REDIRECT_URI: str = "http://localhost:8000/api/fyers/callback"
     
     # Engine Refresh Cycles (Optimized for Fyers Prime)
     INDEX_TICK_INTERVAL_SEC: float = 1.0       # 1-second batch quote pull
@@ -66,11 +73,9 @@ class Settings(BaseSettings):
     CHAIN_FRESHNESS_TTL_SEC: float = 8.0      # Maximum validity for chain
     
     # WebSocket Configuration (Zero-Latency Real-Time Streaming)
-    ENABLE_FYERS_WS: bool = True
+    ENABLE_FYERS_WS: bool = False
     
-    class Config:
-        env_file = ".env"
-        extra = "allow"
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 @lru_cache()
 def get_settings() -> Settings:

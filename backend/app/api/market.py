@@ -23,6 +23,11 @@ _indices_cache: Dict[str, Any] = {}
 _in_flight_locks: Dict[str, asyncio.Lock] = {}
 
 
+def _chain_result(raw, source):
+    # Carry provenance into every parser consumer, including confluence and bot routes.
+    return ({**raw, "_terminal_source": source} if raw else None), source
+
+
 async def fetch_live_chain_data(symbol: str) -> tuple[Optional[dict], str]:
     """
     Tiered real-market data fetcher (Zero Simulation):
@@ -32,16 +37,18 @@ async def fetch_live_chain_data(symbol: str) -> tuple[Optional[dict], str]:
     If market is closed, returns last known real cached chain.
     """
     sym = symbol.upper()
+    if sym not in get_settings().TRACKED_SYMBOLS:
+        raise HTTPException(422, "Unsupported index symbol")
     now = time.time()
     market_active = is_market_open()
 
     # If off-market and we have cached real data from today, serve it
     if not market_active and sym in _chain_cache:
-        return _chain_cache[sym], "MARKET_CLOSED"
+        return _chain_result(_chain_cache[sym], "MARKET_CLOSED")
 
     # Serve recently cached chain (within 5.0 seconds) to protect against Fyers rate limits
     if sym in _chain_cache and (now - _chain_cache_time.get(sym, 0.0)) < 5.0:
-        return _chain_cache[sym], "FYERS_LIVE" if fyers_service.is_configured() else "CACHED_LIVE"
+        return _chain_result(_chain_cache[sym], "FYERS_LIVE" if fyers_service.is_configured() else "CACHED_LIVE")
 
     # Single-flight deduplication: prevent concurrent stampedes for the same symbol
     if sym not in _in_flight_locks:
@@ -51,7 +58,7 @@ async def fetch_live_chain_data(symbol: str) -> tuple[Optional[dict], str]:
         # Re-check cache after acquiring lock in case another concurrent task just fetched it
         now = time.time()
         if sym in _chain_cache and (now - _chain_cache_time.get(sym, 0.0)) < 5.0:
-            return _chain_cache[sym], "FYERS_LIVE" if fyers_service.is_configured() else "CACHED_LIVE"
+            return _chain_result(_chain_cache[sym], "FYERS_LIVE" if fyers_service.is_configured() else "CACHED_LIVE")
 
         # Tier 1: Fyers Live
         if fyers_service.is_configured():
@@ -61,30 +68,20 @@ async def fetch_live_chain_data(symbol: str) -> tuple[Optional[dict], str]:
                 if chain and chain.get("records", {}).get("data"):
                     _chain_cache[sym] = chain
                     _chain_cache_time[sym] = time.time()
-                    return chain, "FYERS_LIVE"
+                    return _chain_result(chain, "FYERS_LIVE")
             except Exception as e:
                 logger.warning(f"Fyers fetch failed for {sym}: {e}")
 
             # If Fyers had a transient blip BUT we have cached data from earlier,
             # IMMEDIATELY serve the cache!
             if sym in _chain_cache:
-                return _chain_cache[sym], "CACHED_LIVE"
+                return _chain_result(_chain_cache[sym], "STALE_CACHE")
 
         # If cached chain exists from earlier, serve it
         if sym in _chain_cache:
-            return _chain_cache[sym], "CACHED_LIVE"
+            return _chain_result(_chain_cache[sym], "STALE_CACHE")
 
-        # Tier 2: High-fidelity market simulator fallback (for weekends / off-market development)
-        try:
-            from app.services.simulator import market_simulator
-            sim_chain = market_simulator.get_option_chain(sym)
-            if sim_chain:
-                _chain_cache[sym] = sim_chain
-                _chain_cache_time[sym] = time.time()
-                return sim_chain, "SIMULATOR"
-        except Exception as e:
-            logger.warning(f"Simulator fallback failed for {sym}: {e}")
-
+        # Never substitute synthetic prices into the trading data pipeline.
         return None, "UNAVAILABLE"
 
 
@@ -190,13 +187,16 @@ async def get_option_chain_endpoint(symbol: str = "NIFTY"):
     symbol = symbol.upper()
     raw_chain, source = await fetch_live_chain_data(symbol)
     parsed = parse_option_chain(raw_chain, symbol)
+    if parsed:
+        parsed.source = source
     if not parsed:
         raise HTTPException(status_code=503, detail=f"Failed to load option chain for {symbol}")
 
     # Record live ticks into 5-minute candles
     try:
         from app.services.option_candle_service import option_candle_service
-        option_candle_service.record_chain_ticks(parsed)
+        if source not in {"STALE_CACHE", "MARKET_CLOSED", "SIMULATOR"}:
+            option_candle_service.record_chain_ticks(parsed)
     except Exception as e:
         logger.debug(f"Tick record error in option-chain endpoint: {e}")
 
@@ -298,6 +298,7 @@ async def get_option_chain_endpoint(symbol: str = "NIFTY"):
     dump_fn = getattr(parsed, "model_dump", getattr(parsed, "dict", None))
     res = dump_fn() if dump_fn else parsed.__dict__
     res["source"] = source
+    res["cache_age_seconds"] = round(max(0.0, time.time() - _chain_cache_time.get(symbol, time.time())), 2)
     if atm2_matrix:
         res["atm_2_signals"] = atm2_matrix
     return res

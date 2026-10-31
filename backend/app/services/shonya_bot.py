@@ -20,6 +20,8 @@ import time
 import uuid
 import sqlite3
 import logging
+import math
+import threading
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime, time as dt_time
 
@@ -83,6 +85,7 @@ class ShonyaBot:
     CAPITAL_CEILING = 100000.0
 
     def __init__(self, db_path: str = DB_PATH):
+        self._trade_lock = threading.RLock()
         self.db_path = db_path
         self.is_active: bool = True
         self.trading_mode: str = "PAPER"  # "PAPER" or "LIVE"
@@ -93,6 +96,9 @@ class ShonyaBot:
         self.confluence_persistence: Dict[str, List[str]] = {}
         self._init_db()
         self._load_config()
+        # This modernization build cannot restore a persisted live mode.
+        self.trading_mode = "PAPER"
+        self.is_active = False
 
     def _get_conn(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self.db_path, timeout=15.0)
@@ -287,6 +293,8 @@ class ShonyaBot:
 
     def set_mode(self, mode: str) -> str:
         mode_upper = mode.upper()
+        if mode_upper != "PAPER":
+            raise ValueError("Live trading is disabled in this build")
         if mode_upper in ["PAPER", "LIVE"]:
             self.trading_mode = mode_upper
             try:
@@ -462,7 +470,11 @@ class ShonyaBot:
     # -------------------------------------------------------------
     # Trade Placement (Paper & Live Execution)
     # -------------------------------------------------------------
-    def place_trade(
+    def place_trade(self, *args, **kwargs):
+        with self._trade_lock:
+            return self._place_trade_locked(*args, **kwargs)
+
+    def _place_trade_locked(
         self,
         symbol: str,
         strike: float,
@@ -479,6 +491,13 @@ class ShonyaBot:
     ) -> Dict[str, Any]:
         sym = symbol.upper()
         opt_t = option_type.upper()
+        if self.trading_mode != "PAPER":
+            return {"success": False, "message": "Live trading is disabled in this build"}
+        if sym not in INDEX_CONFIGS or opt_t not in {"CE", "PE"} or type(lots) is not int or not 1 <= lots <= 10:
+            return {"success": False, "message": "Invalid contract or lot quantity"}
+        numbers = [strike, entry_price, target1, target2, stop_loss]
+        if any(v is not None and (not math.isfinite(v) or v <= 0) for v in numbers):
+            return {"success": False, "message": "Prices and strike must be finite and positive"}
         cfg = INDEX_CONFIGS.get(sym, INDEX_CONFIGS["NIFTY"])
         lot_size = cfg.get("lot_size", 65)
         total_qty = lots * lot_size
@@ -509,12 +528,17 @@ class ShonyaBot:
                 est_ltp = float(q_res["d"][0].get("v", {}).get("lp", 0.0))
 
         if est_ltp <= 0:
-            est_ltp = 120.0  # Safe realistic baseline if market closed
+            return {"success": False, "message": "No executable quote; paper entry rejected"}
 
         # Stop loss: -25% protective disaster stop (Main exit is Hull signal flip)
         sl = stop_loss if (stop_loss and stop_loss > 0) else round(est_ltp * 0.75, 1)
         t1 = target1 if (target1 and target1 > 0) else round(est_ltp * 1.30, 1)
         t2 = target2 if (target2 and target2 > 0) else round(est_ltp * 1.60, 1)
+
+        if est_ltp * total_qty > cap_stat["available_capital"]:
+            return {"success": False, "message": "Insufficient capital at resolved quote"}
+        if not (0 < sl < est_ltp < t1 <= t2):
+            return {"success": False, "message": "Require stop < entry < target1 <= target2"}
 
         trade_id = f"SHONYA_{sym}_{int(strike)}_{opt_t}_{int(time.time())}"
         now_dt = get_current_ist().strftime("%Y-%m-%d %H:%M:%S")

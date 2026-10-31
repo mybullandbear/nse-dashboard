@@ -1,93 +1,74 @@
-"""
-Terminal Access Gateway & Authentication Router
-Protects the public deployment with institutional password authentication.
-"""
+"""Fail-closed single-operator gateway. Sessions are local to one server worker."""
 import hashlib
-import logging
+import hmac
+import secrets
+import time
+from collections import OrderedDict
 from typing import Optional
-from fastapi import APIRouter, Request, Response, HTTPException, Depends
-from pydantic import BaseModel
-
-logger = logging.getLogger(__name__)
+from fastapi import APIRouter, Request, Response, HTTPException
+from pydantic import BaseModel, Field
+from app.core.config import get_settings
 
 router = APIRouter(prefix="/api/access", tags=["access_gate"])
-
-TERMINAL_PASSWORD = "tradermybullandbear"
-# Deterministic secure session token derived from password
-TOKEN_SALT = b"tradermybullandbear_mybullandbear_secure_salt_2026"
-VALID_ACCESS_TOKEN = hashlib.sha256(TERMINAL_PASSWORD.encode() + TOKEN_SALT).hexdigest()
 COOKIE_NAME = "terminal_access_token"
-
+_sessions = OrderedDict()
+_attempts = OrderedDict()
+MAX_SESSIONS = 1000
 
 class LoginRequest(BaseModel):
-    password: str
-    remember_device: Optional[bool] = True
+    password: str = Field(min_length=1, max_length=256)
+    remember_device: bool = False
 
+def _digest(token):
+    return hashlib.sha256(token.encode()).hexdigest()
 
 def is_token_valid(token: Optional[str]) -> bool:
-    # Public review mode: password protection disabled
+    if not token:
+        return False
+    key = _digest(token)
+    expiry = _sessions.get(key, 0)
+    if expiry <= time.monotonic():
+        _sessions.pop(key, None)
+        return False
     return True
 
-
 def get_token_from_request(request: Request) -> Optional[str]:
-    # 1. Check custom header
-    header_token = request.headers.get("X-Access-Token")
-    if header_token:
-        return header_token
-    # 2. Check Cookie
-    cookie_token = request.cookies.get(COOKIE_NAME)
-    if cookie_token:
-        return cookie_token
-    # 3. Check query param for websocket
-    query_token = request.query_params.get("access_token")
-    if query_token:
-        return query_token
-    return None
-
+    return request.cookies.get(COOKIE_NAME) or request.headers.get("X-Access-Token")
 
 @router.post("/login")
-async def login(req: LoginRequest, response: Response):
-    """Validates the terminal password and issues a persistent or session token."""
-    input_pw = req.password.strip()
-    if input_pw != TERMINAL_PASSWORD:
-        logger.warning("Access Gateway: Failed login attempt.")
-        raise HTTPException(status_code=401, detail="Invalid access key. Access denied.")
-
-    # Set persistent 365-day cookie if remember_device is selected
-    max_age = (365 * 24 * 3600) if req.remember_device else None
-    response.set_cookie(
-        key=COOKIE_NAME,
-        value=VALID_ACCESS_TOKEN,
-        max_age=max_age,
-        httponly=False,  # Allow JS client to read if needed
-        samesite="lax",
-        path="/"
-    )
-
-    logger.info(f"Access Gateway: Password accepted. Remember device: {req.remember_device}")
-    return {
-        "success": True,
-        "token": VALID_ACCESS_TOKEN,
-        "remembered": req.remember_device,
-        "message": "Access granted. Device saved as trusted." if req.remember_device else "Access granted (Session only)."
-    }
-
+async def login(req: LoginRequest, request: Request, response: Response):
+    settings = get_settings()
+    if len(settings.TERMINAL_PASSWORD) < 16:
+        raise HTTPException(503, "Set TERMINAL_PASSWORD to at least 16 characters on the server")
+    now = time.monotonic()
+    host = request.client.host if request.client else "unknown"
+    attempts = [t for t in _attempts.get(host, []) if now - t < 60]
+    if len(attempts) >= 5:
+        raise HTTPException(429, "Too many attempts; retry in one minute", headers={"Retry-After": "60"})
+    attempts.append(now)
+    _attempts[host] = attempts
+    if len(_attempts) > 10000:
+        _attempts.popitem(last=False)
+    if not hmac.compare_digest(req.password.encode(), settings.TERMINAL_PASSWORD.encode()):
+        raise HTTPException(401, "Invalid access key")
+    _attempts.pop(host, None)
+    token = secrets.token_urlsafe(32)
+    _sessions[_digest(token)] = now + settings.SESSION_TTL_SEC
+    while len(_sessions) > MAX_SESSIONS:
+        _sessions.popitem(last=False)
+    response.set_cookie(COOKIE_NAME, token, max_age=settings.SESSION_TTL_SEC if req.remember_device else None,
+                        httponly=True, secure=settings.COOKIE_SECURE, samesite="lax", path="/")
+    response.headers["Cache-Control"] = "no-store"
+    return {"success": True, "remembered": req.remember_device}
 
 @router.get("/check")
 async def check_access(request: Request):
-    """Verifies if the current request session possesses valid access rights."""
-    token = get_token_from_request(request)
-    authenticated = is_token_valid(token)
-    return {
-        "authenticated": authenticated
-    }
-
+    return {"authenticated": is_token_valid(get_token_from_request(request))}
 
 @router.post("/logout")
-async def logout(response: Response):
-    """Terminates session and removes cookie."""
-    response.delete_cookie(key=COOKIE_NAME, path="/")
-    return {
-        "success": True,
-        "message": "Terminal locked successfully."
-    }
+async def logout(request: Request, response: Response):
+    token = get_token_from_request(request)
+    if token:
+        _sessions.pop(_digest(token), None)
+    response.delete_cookie(COOKIE_NAME, path="/")
+    return {"success": True}

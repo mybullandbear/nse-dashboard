@@ -78,12 +78,12 @@ def load_credentials() -> Credentials:
     fyers_client_id = (
         fyers_dict.get("client_id")
         or os.getenv("FYERS_CLIENT_ID")
-        or "7BRKBHOFP8-100"
+        or ""
     )
     fyers_secret = (
         fyers_dict.get("secret_key")
         or os.getenv("FYERS_SECRET_KEY")
-        or "TO0QPDNH7A"
+        or ""
     )
     fyers_redirect = (
         fyers_dict.get("redirect_uri")

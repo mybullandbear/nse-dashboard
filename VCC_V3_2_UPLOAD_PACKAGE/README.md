@@ -16,7 +16,7 @@ Institutional-grade decision support system for intraday option sellers (Nifty, 
 
 ## 🔑 Broker Credentials & Specs (Fyers API v3)
 
-* **Fyers Client ID (App ID):** `7BRKBHOFP8-100` *(Must include `-100` suffix required by Fyers API v3)*
+* **Fyers Client ID (App ID):** `` *(Must include `-100` suffix required by Fyers API v3)*
 * **Redirect URI:** `http://137.23.42.11:8000/api/fyers/callback`
 * **Config Storage Location on Server:** `/home/ubuntu/nse-dashboard/backend/fyers_config.json`
 * **OAuth Login Endpoint:** `http://137.23.42.11:8000/api/fyers/login`
@@ -87,6 +87,6 @@ sudo journalctl -u nse-dashboard -f
 
 1. Open **`http://137.23.42.11:8000`** in any browser.
 2. Click **🔑 FYERS LOGIN** at the top or bottom navigation bar.
-3. Enter your **Client ID** (`7BRKBHOFP8-100`) and **Secret Key**.
+3. Enter your **Client ID** (``) and **Secret Key**.
 4. Click **`🚀 LOG IN VIA FYERS OAUTH`**.
 5. Log into your Fyers account — it will redirect back with `🎉 Fyers OAuth Login Successful!` and stream live tick data.

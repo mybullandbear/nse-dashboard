@@ -1,0 +1,29 @@
+{
+  "scope": "Offline microbenchmarks; not production latency or broker throughput",
+  "indicator_ema_500": {
+    "iterations": 500,
+    "p50_ms": 0.0361,
+    "p95_ms": 0.0628
+  },
+  "chain_parse_61_strikes": {
+    "iterations": 500,
+    "p50_ms": 0.3061,
+    "p95_ms": 0.5113
+  },
+  "normalized_uncached_61_strikes": {
+    "iterations": 500,
+    "p50_ms": 0.762,
+    "p95_ms": 1.2411
+  },
+  "normalized_cached_61_strikes": {
+    "iterations": 500,
+    "p50_ms": 1.5472,
+    "p95_ms": 2.03
+  },
+  "session_validation": {
+    "iterations": 1000,
+    "p50_ms": 0.0005,
+    "p95_ms": 0.0006
+  },
+  "broadcast_100_clients_mean_ms": 0.8099
+}

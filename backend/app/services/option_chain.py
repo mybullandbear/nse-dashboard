@@ -3,6 +3,10 @@ Option Chain Processing & Metrics Engine
 Parses option chains, identifies ATM strikes, computes PCR variants and Max Pain.
 """
 import math
+import hashlib
+import json
+import threading
+from collections import OrderedDict
 import time
 from typing import Dict, Any, List, Optional
 from pydantic import BaseModel
@@ -65,7 +69,35 @@ class ParsedOptionChain(BaseModel):
     spot_hull: Optional[Dict[str, Any]] = None
 
 
+_normalized_cache = OrderedDict()
+_normalized_lock = threading.RLock()
+
 def parse_option_chain(raw_chain: Dict[str, Any], symbol: str = "NIFTY") -> Optional[ParsedOptionChain]:
+    """Share normalized PCR/Max Pain work, returning an isolated mutable model to each consumer."""
+    if not raw_chain:
+        return None
+    try:
+        digest = hashlib.sha256(json.dumps(raw_chain, sort_keys=True, separators=(",", ":")).encode()).digest()
+    except (ValueError, TypeError):
+        return _parse_option_chain_uncached(raw_chain, symbol)
+    key = (symbol.upper(), get_settings().STRIKE_STEPS.get(symbol.upper(), 50), digest)
+    with _normalized_lock:
+        now = time.monotonic()
+        cached = _normalized_cache.get(key)
+        if cached and now - cached[0] < 5:
+            _normalized_cache.move_to_end(key)
+            return cached[1].model_copy(deep=True)
+        parsed = _parse_option_chain_uncached(raw_chain, symbol)
+        if parsed:
+            _normalized_cache[key] = (now, parsed)
+            _normalized_cache.move_to_end(key)
+            while len(_normalized_cache) > 32:
+                _normalized_cache.popitem(last=False)
+            return parsed.model_copy(deep=True)
+        return None
+
+
+def _parse_option_chain_uncached(raw_chain: Dict[str, Any], symbol: str = "NIFTY") -> Optional[ParsedOptionChain]:
     """Parses raw NSE or Fyers option chain into a normalized ParsedOptionChain structure."""
     if not raw_chain:
         return None
@@ -166,6 +198,7 @@ def parse_option_chain(raw_chain: Dict[str, Any], symbol: str = "NIFTY") -> Opti
     max_pain = compute_max_pain(sorted_strikes)
 
     return ParsedOptionChain(
+        source=raw_chain.get("_terminal_source", "LIVE"),
         symbol=symbol.upper(),
         spot_price=round(spot_price, 2),
         spot_change=round(spot_change, 2),

@@ -6,7 +6,7 @@ try:
     from pydantic_settings import BaseSettings
     class Settings(BaseSettings):
         APP_NAME: str = "NSE Options Terminal"
-        DEBUG: bool = True
+        DEBUG: bool = False
         HOST: str = "0.0.0.0"
         PORT: int = 8000
         DATABASE_URL: str = "sqlite:///./nse_terminal.db"
@@ -37,7 +37,7 @@ except ImportError:
         from pydantic import BaseModel
         class Settings(BaseModel):
             APP_NAME: str = "NSE Options Terminal"
-            DEBUG: bool = True
+            DEBUG: bool = False
             HOST: str = "0.0.0.0"
             PORT: int = 8000
             DATABASE_URL: str = "sqlite:///./nse_terminal.db"
@@ -60,7 +60,7 @@ except ImportError:
         @dataclass
         class Settings:
             APP_NAME: str = "NSE Options Terminal"
-            DEBUG: bool = True
+            DEBUG: bool = False
             HOST: str = "0.0.0.0"
             PORT: int = 8000
             DATABASE_URL: str = "sqlite:///./nse_terminal.db"

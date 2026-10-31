@@ -18,8 +18,8 @@ export function renderAuthModal(container, onClose) {
 
         <div style="font-family: var(--font-mono); font-size: 11px; padding: 10px; border-radius: 6px; background: ${fyers.has_token ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; border: 1px solid ${fyers.has_token ? '#10b981' : '#f59e0b'};">
           STATUS: <strong>${fyers.has_token ? '● ACTIVE & VERIFIED' : '● TOKEN NOT SET / EXPIRED'}</strong><br/>
-          CLIENT ID: <strong>${fyers.client_id || '7BRKBHOFP8-100'}</strong><br/>
-          REDIRECT URI: <span style="opacity: 0.8;">${fyers.redirect_uri || 'http://137.23.42.11:8000/api/fyers/callback'}</span>
+          CLIENT ID: <strong>${fyers.client_id || 'Not configured'}</strong><br/>
+          REDIRECT URI: <span style="opacity: 0.8;">${fyers.redirect_uri || 'Configure registered redirect URI'}</span>
         </div>
 
         <!-- 1-Click OAuth Login -->

@@ -6,17 +6,14 @@ import json
 import logging
 import os
 import re
+import tempfile
 from typing import Optional, Dict, Any, Tuple
 from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 
-try:
-    from fyers_apiv3 import fyersModel
-    HAS_FYERS = True
-except ImportError:
-    fyersModel = None
-    HAS_FYERS = False
+from app.services.fyers_transport import fyersModel
+HAS_FYERS = True
 
 
 def clean_token(token: Optional[str]) -> Optional[str]:
@@ -68,13 +65,19 @@ class FyersService:
     def _save_config(self):
         try:
             os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
-            with open(self.config_path, "w") as f:
-                json.dump({
-                    "client_id": self.client_id,
-                    "secret_key": self.secret_key,
-                    "redirect_uri": self.redirect_uri,
-                    "access_token": self.access_token
-                }, f, indent=2)
+            directory = os.path.dirname(os.path.abspath(self.config_path))
+            os.makedirs(directory, exist_ok=True)
+            fd, temp_path = tempfile.mkstemp(prefix=".broker-", dir=directory)
+            try:
+                with os.fdopen(fd, "w") as f:
+                    json.dump({"client_id": self.client_id, "secret_key": self.secret_key,
+                               "redirect_uri": self.redirect_uri, "access_token": self.access_token}, f)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(temp_path, self.config_path)
+            finally:
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
         except Exception as e:
             logger.error(f"Error saving fyers_config.json: {e}")
 
@@ -199,16 +202,6 @@ class FyersService:
             candidate_uris.append(redirect_uri)
         if self.redirect_uri and self.redirect_uri not in candidate_uris:
             candidate_uris.append(self.redirect_uri)
-        for u in [
-            "http://137.23.42.11:8000/api/fyers/callback",
-            "https://137.23.42.11/api/fyers/callback",
-            "http://137.23.42.11/api/fyers/callback",
-            "http://localhost:8000/api/fyers/callback",
-            "http://127.0.0.1:8000/api/fyers/callback",
-            "https://trade.fyers.in/api-login/redirect-uri/index.html"
-        ]:
-            if u not in candidate_uris:
-                candidate_uris.append(u)
 
         for r_uri in candidate_uris:
             try:
@@ -230,9 +223,9 @@ class FyersService:
                     logger.info(f"Fyers authentication succeeded with redirect_uri: {r_uri}")
                     return True
                 else:
-                    logger.debug(f"Auth attempt with {r_uri} returned: {res}")
+                    logger.debug("Broker authorization rejected")
             except Exception as e:
-                logger.debug(f"Exception during auth attempt with {r_uri}: {e}")
+                logger.debug("Broker authorization exchange failed")
 
         logger.error("All candidate redirect URIs failed for Fyers token exchange.")
         return False
@@ -495,6 +488,7 @@ class FyersService:
         """
         Submits an order to Fyers exchange gateway.
         """
+        return {"s": "error", "message": "Live trading is disabled in this build"}
         if not self.fyers:
             return {"s": "error", "message": "Fyers client not configured or token expired"}
         
@@ -525,6 +519,7 @@ class FyersService:
         """
         Squares off an open position in Fyers using position ID or market counter-order.
         """
+        return {"s": "error", "message": "Live trading is disabled in this build"}
         if not self.fyers:
             return {"s": "error", "message": "Fyers client not configured"}
         
@@ -548,6 +543,7 @@ class FyersService:
         """
         Emergency Square Off All open positions in Fyers account.
         """
+        return {"s": "error", "message": "Live trading is disabled in this build"}
         pos_data = self.get_positions()
         net_pos = pos_data.get("netPositions", [])
         results = []

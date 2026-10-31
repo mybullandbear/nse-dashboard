@@ -10,12 +10,8 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-try:
-    from fyers_apiv3 import fyersModel
-    HAS_FYERS = True
-except ImportError:
-    fyersModel = None
-    HAS_FYERS = False
+from app.services.fyers_transport import fyersModel
+HAS_FYERS = True
 
 
 def clean_token(token: Optional[str]) -> Optional[str]:
@@ -60,17 +56,12 @@ class FyersClient:
                 logger.warning(f"Error loading fyers_config.json: {e}")
 
     def save_config(self):
-        try:
-            os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
-            with open(self.config_path, "w") as f:
-                json.dump({
-                    "client_id": self.client_id,
-                    "secret_key": self.secret_key,
-                    "redirect_uri": self.redirect_uri,
-                    "access_token": self.access_token
-                }, f, indent=2)
-        except Exception as e:
-            logger.error(f"Error saving fyers_config.json: {e}")
+        from app.services.fyers_service import fyers_service
+        fyers_service.client_id = self.client_id
+        fyers_service.secret_key = self.secret_key
+        fyers_service.redirect_uri = self.redirect_uri
+        fyers_service.access_token = self.access_token
+        fyers_service._save_config()
 
     def _init_client(self):
         if not HAS_FYERS or not self.client_id or not self.access_token:

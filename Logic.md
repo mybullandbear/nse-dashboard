@@ -157,8 +157,8 @@ To run live market data feed from Fyers Broker API, the following credentials ar
 
 | Credential | Variable Name | Purpose / Source | Example Value |
 |---|---|---|---|
-| **Client ID** | `FYERS_CLIENT_ID` | Obtained from Fyers API Dashboard | `7BRKBHOFP8-100` |
-| **Secret Key** | `FYERS_SECRET_KEY` | Obtained from Fyers App Config | `TO0QPDNH7A` |
+| **Client ID** | `FYERS_CLIENT_ID` | Obtained from Fyers API Dashboard | `` |
+| **Secret Key** | `FYERS_SECRET_KEY` | Obtained from Fyers App Config | `` |
 | **Redirect URI** | `FYERS_REDIRECT_URI` | Configured in Fyers App Settings | `http://137.23.42.11:8000/api/fyers/callback` |
 | **Access Token** | `FYERS_ACCESS_TOKEN` | Generated daily via OAuth or pasted in UI | `eyJhbGciOiJIUzI1Ni...` |
 

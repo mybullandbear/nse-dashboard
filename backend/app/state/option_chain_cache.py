@@ -124,7 +124,7 @@ class OptionChainCoordinator:
                     s_data.pe_buildup = buildup
 
             # Calculate ATM Strike
-            step = 50 if "NIFTY" in symbol and "BANK" not in symbol else 100
+            step = settings.STRIKE_STEPS[symbol]
             atm = round(spot_price / step) * step if spot_price > 0 else 0.0
 
             return OptionChainSnapshot(

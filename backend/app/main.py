@@ -65,7 +65,8 @@ async def background_market_poller():
                         raw_chain, source = await fetch_live_chain_data(sym)
                         if raw_chain:
                             parsed = parse_option_chain(raw_chain, sym)
-                            if parsed:
+                            if parsed and source not in {"STALE_CACHE", "MARKET_CLOSED", "SIMULATOR"}:
+                                parsed.source = source
                                 oi_analyzer.record_snapshot(parsed)
                                 try:
                                     option_candle_service.record_chain_ticks(parsed)
@@ -127,19 +128,23 @@ async def lifespan(app: FastAPI):
     yield
     logger.info("Shutting down application...")
     poller_task.cancel()
+    await asyncio.gather(poller_task, return_exceptions=True)
 
 
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.VERSION,
     description="Institutional-grade NSE Options Terminal and Decision Support System",
+    docs_url="/docs" if settings.DEBUG else None,
+    redoc_url=None,
+    openapi_url="/openapi.json" if settings.DEBUG else None,
     lifespan=lifespan
 )
 
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -152,35 +157,23 @@ async def gate_protection_middleware(request: Request, call_next):
     if request.method == "OPTIONS":
         return await call_next(request)
 
-    # Public resources
-    is_public = (
-        path == "/" or
-        path == "/dashboard" or
-        path == "/architecture" or
-        path == "/health" or
-        path == "/manifest.json" or
-        path == "/sw.js" or
-        path == "/api/market/radar_push_test" or
-        path.startswith("/api/architecture/") or
-        path.startswith("/api/matrix/") or
-        path.startswith("/api/access/") or
-        path.startswith("/api/webhook/") or
-        path.startswith("/api/fyers/") or
-        path.startswith("/static/") or
-        path.startswith("/docs") or
-        path.startswith("/openapi.json") or
-        request.client.host in ["127.0.0.1", "localhost", "::1"]
-    )
-
-    if not is_public and path.startswith("/api/"):
-        token = get_token_from_request(request)
-        if not is_token_valid(token):
-            return JSONResponse(
-                status_code=401,
-                content={"detail": "Unauthorized: Access key required to access institutional terminal data."}
-            )
-
-    return await call_next(request)
+    public_api = {"/api/access/login", "/api/access/check", "/api/access/logout",
+                  "/api/webhook/tradingview"}
+    if request.method not in {"GET", "HEAD", "OPTIONS"}:
+        origin = request.headers.get("origin")
+        allowed = set(settings.ALLOWED_ORIGINS) | {str(request.base_url).rstrip("/")}
+        if origin and origin not in allowed:
+            return JSONResponse(status_code=403, content={"detail": "Origin not allowed"})
+    if path.startswith("/api/") and path not in public_api:
+        if not is_token_valid(get_token_from_request(request)):
+            return JSONResponse(status_code=401, content={"detail": "Authentication required"})
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    if path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 # Include All Feature Routers
@@ -282,7 +275,6 @@ async def health_check():
         "is_market_open": session.get("is_market_open"),
         "current_time_ist": session.get("current_time_ist"),
         "fyers_configured": fyers_service.is_configured(),
-        "fyers_client_id": fyers_service.client_id or "",
         "active_ws_clients": len(ws_manager.active_connections)
     }
 

@@ -206,6 +206,10 @@ class SmartTrackerBot:
         2. Enforces Variant C Stop Ratchet (+14% -> Entry + 3%), 5M AlphaTrend Structural Trailing, and 15:30 IST Safety.
         3. If no position is open in this index segment, evaluates new entry using 5-Pillar TQS and ₹30k capital gates.
         """
+        if chain and getattr(chain, "source", "") in {"SIMULATOR", "STALE_CACHE", "MARKET_CLOSED"}:
+            source = chain.source
+            self._record_rejection(symbol, "SIMULATOR_DATA_REJECTED" if source == "SIMULATOR" else "STALE_DATA_REJECTED", {"source": source})
+            return
         if not chain or not chain.strikes:
             return
 

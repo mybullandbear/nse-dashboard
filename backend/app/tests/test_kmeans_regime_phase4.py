@@ -2,6 +2,11 @@
 Regression & Acceptance Tests for Phase 4 K-Means Market Regime Model
 Runs via standard python unittest module.
 """
+from pathlib import Path as _Path
+import pytest as _pytest
+if not (_Path(__file__).resolve().parents[3] / "traning dataset").exists():
+    _pytest.skip("Research datasets/models are not included in this repository", allow_module_level=True)
+
 import os
 import sys
 import json

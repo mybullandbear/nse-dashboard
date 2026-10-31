@@ -502,7 +502,7 @@ class TestBotImprovements(unittest.TestCase):
             # 400 * 30 = 12,000 committed
             self.assertEqual(status["open_positions"], 1)
             self.assertEqual(status["committed_margin"], 12000.0)
-            self.assertEqual(status["available_capital"], 18000.0)
+            self.assertEqual(status["available_capital"], max(0.0, rebooted_bot.capital_ceiling - 12000.0))
 
 
     # -------------------------------------------------------------
