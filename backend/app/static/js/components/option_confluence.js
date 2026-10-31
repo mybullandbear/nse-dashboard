@@ -133,6 +133,7 @@ export async function renderOptionConfluence(container) {
 
   // Continuous live update every 4.5 seconds
   pollTimer = setInterval(async () => {
+    if (document.hidden) return;
     if (!document.body.contains(container)) {
       clearInterval(pollTimer);
       pollTimer = null;

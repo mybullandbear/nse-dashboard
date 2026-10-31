@@ -28,12 +28,19 @@ export function initPWAInstaller() {
     });
   }
 
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    banner?.classList.remove('visible');
+  });
+
   // Register Service Worker
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
+    const register = () => {
       navigator.serviceWorker.register('/sw.js')
         .then((reg) => console.log('PWA ServiceWorker registered:', reg.scope))
         .catch((err) => console.warn('PWA ServiceWorker registration failed:', err));
-    });
+    };
+    if (document.readyState === 'complete') register();
+    else window.addEventListener('load', register, { once: true });
   }
 }

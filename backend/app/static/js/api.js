@@ -351,6 +351,10 @@ export class StreamClient {
 
       this.ws.onopen = () => {
         this.retryCount = 0;
+        clearInterval(this.heartbeatTimer);
+        this.heartbeatTimer = setInterval(() => {
+          if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify({action:'ping'}));
+        }, 25000);
         if (this.onStatusChange) this.onStatusChange(true);
         this.subscribe(this.activeSymbol);
       };
@@ -365,6 +369,7 @@ export class StreamClient {
       };
 
       this.ws.onclose = (event) => {
+        clearInterval(this.heartbeatTimer);
         if (this.onStatusChange) this.onStatusChange(false);
         if (event.code === 1008) { window.dispatchEvent(new CustomEvent("terminal:unauthorized")); return; }
         this.scheduleReconnect();

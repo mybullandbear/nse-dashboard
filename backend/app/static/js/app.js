@@ -63,9 +63,13 @@ function _contentDataKey(s) {
       return JSON.stringify([
         s.activeChainSymbol,
         s.optionChain1?.spot_price,
-        s.optionChain1?.strikes?.length || 0,
+        s.optionChain1?.strikes || [],
+        s.optionChain1?.pcr,
+        s.optionChain1?.source,
         s.optionChain2?.spot_price,
-        s.optionChain2?.strikes?.length || 0
+        s.optionChain2?.strikes || [],
+        s.optionChain2?.pcr,
+        s.optionChain2?.source
       ]);
     default:
       return s.lastUpdated?.toISOString() || '';
@@ -129,6 +133,10 @@ class TerminalApp {
     const urlParams = new URLSearchParams(window.location.search);
     const initialTab = urlParams.get('tab') || window.location.hash.replace('#', '') || store.getState().activeTab || 'dashboard';
     this.switchTab(initialTab);
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && AccessGate.isUnlocked() && !store.isReplayActive()) this.fetchDualPairData();
+    });
 
     // Initial render
     this.render(store.getState());
@@ -284,7 +292,7 @@ class TerminalApp {
 
     this._isPolling = false;
     this.pollingTimer = setInterval(async () => {
-      if (this._isPolling) return;
+      if (document.hidden || !AccessGate.isUnlocked() || this._isPolling) return;
       // Do not allow live polling ticks to overwrite historical replay scrub
       if (store.isReplayActive()) return;
 

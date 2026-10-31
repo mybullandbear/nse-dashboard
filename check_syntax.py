@@ -1,24 +1,24 @@
-import re
+"""Portable syntax validation for project Python sources.
 
-with open(r'c:\Projects\NSE dashboard\backend\app\static\index.html', 'r', encoding='utf-8') as f:
-    text = f.read()
+Run from any working directory: python check_syntax.py
+Does not import application modules or access broker credentials.
+"""
+from pathlib import Path
+import ast
+import sys
 
-m = re.search(r'<script type="text/babel">(.*?)</script>', text, re.DOTALL)
-if m:
-    code = m.group(1)
-    print("Found Babel script! Length:", len(code))
-    
-    # Check brace balance
-    open_braces = code.count('{')
-    close_braces = code.count('}')
-    print(f"Open braces {{: {open_braces}, Close braces }}: {close_braces}")
-    
-    open_parens = code.count('(')
-    close_parens = code.count(')')
-    print(f"Open parens (: {open_parens}, Close parens ): {close_parens}")
-    
-    open_brackets = code.count('[')
-    close_brackets = code.count(']')
-    print(f"Open brackets [: {open_brackets}, Close brackets ]: {close_brackets}")
-else:
-    print("No babel script found!")
+ROOT = Path(__file__).resolve().parent
+SKIP = {'.git', '.venv', 'venv', '__pycache__', 'node_modules'}
+files = sorted(p for p in ROOT.rglob('*.py') if not any(x in SKIP for x in p.relative_to(ROOT).parts))
+failures = []
+for path in files:
+    try:
+        ast.parse(path.read_text(encoding='utf-8-sig'), filename=str(path))
+    except (SyntaxError, UnicodeError) as exc:
+        failures.append((path.relative_to(ROOT), str(exc)))
+print(f'Checked {len(files)} Python files')
+if failures:
+    for path, error in failures:
+        print(f'FAIL {path}: {error}')
+    sys.exit(1)
+print('PASS: all Python files parse successfully')
