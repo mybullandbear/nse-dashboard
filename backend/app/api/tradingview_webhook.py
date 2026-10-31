@@ -3,7 +3,7 @@ TradingView Webhook Integration Endpoint
 Receives instant Pine Script / TradingView alerts for NIFTY, BANKNIFTY, FINNIFTY, and strikes.
 Keeps TradingView signals as an independent advisory feed.
 """
-import logging
+import logging\nimport hmac
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, HTTPException, Request
@@ -38,7 +38,7 @@ async def receive_tradingview_alert(payload: TradingViewAlertPayload, request: R
     Validates token and records signal as independent advisory feed.
     """
     settings = get_settings()
-    configured_pass = getattr(settings, "TRADINGVIEW_WEBHOOK_SECRET", "mybull_tv_secret_2026")
+    configured_pass = settings.TRADINGVIEW_WEBHOOK_SECRET
 
     if payload.passphrase and payload.passphrase != configured_pass:
         logger.warning(f"Unauthorized TradingView webhook attempt: {payload}")
