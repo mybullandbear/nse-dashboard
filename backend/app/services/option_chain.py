@@ -86,14 +86,14 @@ def parse_option_chain(raw_chain: Dict[str, Any], symbol: str = "NIFTY") -> Opti
         cached = _normalized_cache.get(key)
         if cached and now - cached[0] < 5:
             _normalized_cache.move_to_end(key)
-            return cached[1].model_copy(deep=True)
+            return ParsedOptionChain.model_validate_json(cached[1])
         parsed = _parse_option_chain_uncached(raw_chain, symbol)
         if parsed:
-            _normalized_cache[key] = (now, parsed)
+            _normalized_cache[key] = (now, parsed.model_dump_json())
             _normalized_cache.move_to_end(key)
             while len(_normalized_cache) > 32:
                 _normalized_cache.popitem(last=False)
-            return parsed.model_copy(deep=True)
+            return parsed
         return None
 
 
