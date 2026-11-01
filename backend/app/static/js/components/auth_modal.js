@@ -18,18 +18,18 @@ export function renderAuthModal(container, onClose) {
 
         <div style="font-family: var(--font-mono); font-size: 11px; padding: 10px; border-radius: 6px; background: ${fyers.has_token ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; border: 1px solid ${fyers.has_token ? '#10b981' : '#f59e0b'};">
           STATUS: <strong>${fyers.has_token ? '● ACTIVE & VERIFIED' : '● TOKEN NOT SET / EXPIRED'}</strong><br/>
-          CLIENT ID: <strong>${fyers.client_id || 'Not configured'}</strong><br/>
-          REDIRECT URI: <span style="opacity: 0.8;">${fyers.redirect_uri || 'Configure registered redirect URI'}</span>
+          CLIENT ID: <strong>${fyers.client_id || '2AZMJMBV7B-100'}</strong><br/>
+          REDIRECT URI: <span style="opacity: 0.8;">${window.location.origin}/api/fyers/callback</span>
         </div>
 
         <!-- 1-Click OAuth Login -->
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <label class="form-label">METHOD 1: AUTOMATIC 3-LEGGED OAUTH</label>
-          <a href="/api/fyers/login" class="btn-primary" style="text-align: center; text-decoration: none; display: block;" target="_blank">
+          <label class="form-label">METHOD 1: AUTOMATIC 1-CLICK BROKER LOGIN</label>
+          <a href="/api/fyers/login?redirect_uri=${encodeURIComponent(window.location.origin + '/api/fyers/callback')}" class="btn-primary" style="text-align: center; text-decoration: none; display: block;" target="_blank">
             🔑 LOGIN WITH FYERS BROKER
           </a>
           <span style="font-size: 10.5px; color: var(--text-muted); font-family: var(--font-mono);">
-            Opens Fyers login page in new tab. Redirects back to complete authentication.
+            Opens Fyers login in new tab. When approved, token is automatically caught and activated.
           </span>
         </div>
 
@@ -37,15 +37,15 @@ export function renderAuthModal(container, onClose) {
 
         <!-- Direct Token Paste -->
         <div class="form-group">
-          <label class="form-label">METHOD 2: DIRECT ACCESS TOKEN PASTE</label>
+          <label class="form-label">METHOD 2: PASTE TOKEN, AUTH CODE OR REDIRECT URL</label>
           <input 
-            type="password" 
+            type="text" 
             class="form-input" 
             id="input-access-token" 
-            placeholder="Paste your daily Fyers Access Token..."
+            placeholder="Paste Access Token, Auth Code, or Redirect URL..."
           />
           <button class="btn-primary" id="btn-save-token" style="background: #1e293b; border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8;">
-            VERIFY & ACTIVATE TOKEN
+            VERIFY &amp; ACTIVATE
           </button>
           <div id="token-status-msg" style="font-family: var(--font-mono); font-size: 11px; display: none;"></div>
         </div>
@@ -72,15 +72,21 @@ export function renderAuthModal(container, onClose) {
   const statusMsg = container.querySelector('#token-status-msg');
 
   saveTokenBtn.addEventListener('click', async () => {
-    const token = tokenInput.value.trim();
-    if (!token) return;
+    const rawVal = tokenInput.value.trim();
+    if (!rawVal) return;
 
     saveTokenBtn.disabled = true;
     saveTokenBtn.innerText = 'VERIFYING WITH FYERS...';
     statusMsg.style.display = 'none';
 
     try {
-      const res = await ApiClient.saveFyersToken(token);
+      let res;
+      if (rawVal.includes('http') || rawVal.includes('code=') || rawVal.includes('auth_code=') || rawVal.length < 80) {
+        saveTokenBtn.innerText = 'EXCHANGING CODE...';
+        res = await ApiClient.exchangeFyersCode(rawVal);
+      } else {
+        res = await ApiClient.saveFyersToken(rawVal);
+      }
       statusMsg.style.display = 'block';
       statusMsg.style.color = '#10b981';
       statusMsg.innerText = '✓ ' + (res.message || 'Token successfully verified!');
@@ -96,7 +102,7 @@ export function renderAuthModal(container, onClose) {
       statusMsg.innerText = '✕ ' + (err.message || 'Verification failed.');
     } finally {
       saveTokenBtn.disabled = false;
-      saveTokenBtn.innerText = 'VERIFY & ACTIVATE TOKEN';
+      saveTokenBtn.innerText = 'VERIFY & ACTIVATE';
     }
   });
 }

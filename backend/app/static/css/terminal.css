@@ -4824,6 +4824,64 @@ body {
   background: rgba(56, 189, 248, 0.065) !important;
 }
 
+/* ATM +- 3 Strikes Corridor & Infused Sparklines */
+.atm3-corridor-row {
+  background: rgba(56, 189, 248, 0.015);
+}
+
+.atm3-corridor-row:hover {
+  background: rgba(56, 189, 248, 0.045) !important;
+}
+
+.chain-cell-stack {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
+  gap: 1px;
+}
+
+.chain-cell-stack.stack-right {
+  align-items: flex-end;
+}
+
+.chain-cell-stack.stack-left {
+  align-items: flex-start;
+}
+
+.spark-wrapper {
+  display: block;
+  line-height: 0;
+  margin-top: 1px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  opacity: 0.92;
+  cursor: pointer;
+}
+
+.spark-wrapper:hover {
+  opacity: 1;
+  transform: scaleY(1.15);
+}
+
+.chain-strike-sparkline {
+  display: block;
+  overflow: visible;
+}
+
+.atm3-tag {
+  display: inline-block;
+  font-size: 8px;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 3px;
+  padding: 0 3px;
+  margin-top: 1px;
+  letter-spacing: 0.2px;
+}
+
 /* Center Option Chain Signal Column (ATM ± 2) */
 .sensibull-chain-table th.super-signal {
   background: rgba(56, 189, 248, 0.12);

@@ -1,4 +1,4 @@
-import { AccessGate } from './components/access_gate.js';
+import { AccessGate } from './components/access_gate.js?v=8.0.0';
 const views = {
   dashboard: ['Market overview','Index alignment, option positioning and market context'],
   'option-confluence': ['Option confluence','Inspect signal agreement and the underlying evidence'],

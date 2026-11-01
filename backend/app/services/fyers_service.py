@@ -6,14 +6,17 @@ import json
 import logging
 import os
 import re
-import tempfile
 from typing import Optional, Dict, Any, Tuple
 from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 
-from app.services.fyers_transport import fyersModel
-HAS_FYERS = True
+try:
+    from fyers_apiv3 import fyersModel
+    HAS_FYERS = True
+except ImportError:
+    fyersModel = None
+    HAS_FYERS = False
 
 
 def clean_token(token: Optional[str]) -> Optional[str]:
@@ -65,19 +68,13 @@ class FyersService:
     def _save_config(self):
         try:
             os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
-            directory = os.path.dirname(os.path.abspath(self.config_path))
-            os.makedirs(directory, exist_ok=True)
-            fd, temp_path = tempfile.mkstemp(prefix=".broker-", dir=directory)
-            try:
-                with os.fdopen(fd, "w") as f:
-                    json.dump({"client_id": self.client_id, "secret_key": self.secret_key,
-                               "redirect_uri": self.redirect_uri, "access_token": self.access_token}, f)
-                    f.flush()
-                    os.fsync(f.fileno())
-                os.replace(temp_path, self.config_path)
-            finally:
-                if os.path.exists(temp_path):
-                    os.unlink(temp_path)
+            with open(self.config_path, "w") as f:
+                json.dump({
+                    "client_id": self.client_id,
+                    "secret_key": self.secret_key,
+                    "redirect_uri": self.redirect_uri,
+                    "access_token": self.access_token
+                }, f, indent=2)
         except Exception as e:
             logger.error(f"Error saving fyers_config.json: {e}")
 
@@ -197,11 +194,43 @@ class FyersService:
         if not HAS_FYERS or not self.client_id or not self.secret_key:
             return False
 
+        auth_code = str(auth_code).strip()
+        if "code=" in auth_code or "auth_code=" in auth_code:
+            import urllib.parse
+            parsed = urllib.parse.urlparse(auth_code)
+            params = urllib.parse.parse_qs(parsed.query)
+            auth_code = (params.get("auth_code") or params.get("code") or [auth_code])[0]
+
         candidate_uris = []
         if redirect_uri:
-            candidate_uris.append(redirect_uri)
+            candidate_uris.append(redirect_uri.strip())
         if self.redirect_uri and self.redirect_uri not in candidate_uris:
-            candidate_uris.append(self.redirect_uri)
+            candidate_uris.append(self.redirect_uri.strip())
+
+        preset_uris = [
+            "http://137.23.63.209:8000/api/fyers/callback",
+            "http://137.23.63.209/api/fyers/callback",
+            "http://137.23.63.209:8000/",
+            "http://137.23.63.209/",
+            "https://trade.fyers.in/api-login/redirect-uri/index.html",
+            "http://localhost:8000/api/fyers/callback",
+            "http://127.0.0.1:8000/api/fyers/callback",
+            "http://137.23.42.11:8000/api/fyers/callback",
+            "https://137.23.42.11/api/fyers/callback",
+        ]
+        for u in preset_uris:
+            if u not in candidate_uris:
+                candidate_uris.append(u)
+
+        for u in list(candidate_uris):
+            if ":8000" in u:
+                u_no_port = u.replace(":8000", "")
+                if u_no_port not in candidate_uris:
+                    candidate_uris.append(u_no_port)
+            if u.endswith("/"):
+                u_no_slash = u.rstrip("/")
+                if u_no_slash not in candidate_uris:
+                    candidate_uris.append(u_no_slash)
 
         for r_uri in candidate_uris:
             try:
@@ -223,9 +252,9 @@ class FyersService:
                     logger.info(f"Fyers authentication succeeded with redirect_uri: {r_uri}")
                     return True
                 else:
-                    logger.debug("Broker authorization rejected")
+                    logger.debug(f"Auth attempt with {r_uri} returned: {res}")
             except Exception as e:
-                logger.debug("Broker authorization exchange failed")
+                logger.debug(f"Exception during auth attempt with {r_uri}: {e}")
 
         logger.error("All candidate redirect URIs failed for Fyers token exchange.")
         return False
@@ -337,7 +366,6 @@ class FyersService:
                 }
 
             contract = {
-                "contract_symbol": item.get("symbol"),
                 "strikePrice": strike,
                 "expiryDate": expiry_str,
                 "lastPrice": float(item.get("ltp", 0.0)),
@@ -489,7 +517,6 @@ class FyersService:
         """
         Submits an order to Fyers exchange gateway.
         """
-        return {"s": "error", "message": "Live trading is disabled in this build"}
         if not self.fyers:
             return {"s": "error", "message": "Fyers client not configured or token expired"}
         
@@ -520,7 +547,6 @@ class FyersService:
         """
         Squares off an open position in Fyers using position ID or market counter-order.
         """
-        return {"s": "error", "message": "Live trading is disabled in this build"}
         if not self.fyers:
             return {"s": "error", "message": "Fyers client not configured"}
         
@@ -544,7 +570,6 @@ class FyersService:
         """
         Emergency Square Off All open positions in Fyers account.
         """
-        return {"s": "error", "message": "Live trading is disabled in this build"}
         pos_data = self.get_positions()
         net_pos = pos_data.get("netPositions", [])
         results = []

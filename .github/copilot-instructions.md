@@ -1,0 +1,2 @@
+# Project memory instructions
+Read and follow the root AGENTS.md before planning or changing this repository. Read README.md and docs/PROJECT_STATE.md, docs/DECISIONS.md and relevant docs/CHANGELOG.md entries. Verify recorded claims against source and Git. Follow the task-end documentation checkpoint in AGENTS.md after every completed, partial or blocked task. If files are missing, initialize them from verified repository evidence. Never invent history or test results.

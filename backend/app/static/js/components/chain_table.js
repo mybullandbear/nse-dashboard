@@ -288,6 +288,75 @@ function renderContractHullBadge(contract, optType) {
   }
 }
 
+/**
+ * Renders an inline SVG sparkline for ATM +- 3 option strikes.
+ * @param {number[]} values - Array of numeric points (price or OI)
+ * @param {'price' | 'oi'} type - Metric type
+ * @param {string} contractLabel - e.g. "23050 CE"
+ * @param {string[]} times - Timestamps matching values
+ * @param {boolean} isCall - Whether call or put side
+ */
+function renderStrikeSparklineSvg(values, type, contractLabel, times = [], isCall = true) {
+  if (!values || values.length < 2) return '';
+
+  const valid = values.filter(v => Number.isFinite(v));
+  if (valid.length < 2) return '';
+
+  const first = valid[0];
+  const last = valid[valid.length - 1];
+  const chg = last - first;
+  const pct = first !== 0 ? ((chg / Math.abs(first)) * 100).toFixed(1) : '0.0';
+
+  let color = '#94a3b8';
+  let title = '';
+
+  if (type === 'price') {
+    if (chg > 0) color = '#10b981';
+    else if (chg < 0) color = '#ef4444';
+    title = `${contractLabel} LTP Trend: ₹${first.toFixed(1)} → ₹${last.toFixed(1)} (${chg >= 0 ? '+' : ''}${pct}%)`;
+  } else {
+    if (chg > 0) color = '#38bdf8';
+    else if (chg < 0) color = '#f59e0b';
+    title = `${contractLabel} OI Trend: ${fmtNumber(first)} → ${fmtNumber(last)} (${chg >= 0 ? '+' : ''}${fmtNumber(chg)})`;
+  }
+
+  if (times && times.length) {
+    title += ` [${times[0]} - ${times[times.length - 1]}]`;
+  }
+
+  const min = Math.min(...valid);
+  const max = Math.max(...valid);
+  const span = Math.max(0.001, max - min);
+
+  const w = 54;
+  const h = 13;
+  const padX = 2;
+  const padY = 2;
+  const plotW = w - (padX * 2);
+  const plotH = h - (padY * 2);
+
+  const points = valid.map((v, i) => {
+    const x = padX + (i * plotW) / Math.max(1, valid.length - 1);
+    const y = padY + plotH - ((v - min) / span) * plotH;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+
+  const lastX = (padX + plotW).toFixed(1);
+  const lastY = (padY + plotH - ((last - min) / span) * plotH).toFixed(1);
+
+  return `
+    <svg class="chain-strike-sparkline ${type === 'price' ? 'spark-price' : 'spark-oi'}" 
+         viewBox="0 0 ${w} ${h}" 
+         width="${w}" 
+         height="${h}" 
+         preserveAspectRatio="none">
+      <title>${title}</title>
+      <polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="${lastX}" cy="${lastY}" r="1.6" fill="${color}" />
+    </svg>
+  `;
+}
+
 export function renderChainTable(container, onSelectChainSymbol) {
   // If user is actively touching or scrolling on mobile, pause DOM update to prevent gesture cancellation
   if (isUserTouchingChain) return;
@@ -326,6 +395,7 @@ export function renderChainTable(container, onSelectChainSymbol) {
   const spot = chain.spot_price || (isS1 ? state.oiData1?.spot_price : state.oiData2?.spot_price) || 0;
   const atm = chain.atm_strike || 0;
   const maxPain = chain.max_pain || atm;
+  const strikeSparklines = (chain.strike_sparklines && chain.strike_sparklines.contracts) ? chain.strike_sparklines.contracts : {};
 
   // Step size for index
   const step = (activeChainSym === 'BANKNIFTY' || activeChainSym === 'SENSEX') ? 100 : (activeChainSym === 'MIDCPNIFTY' ? 25 : 50);
@@ -404,6 +474,7 @@ export function renderChainTable(container, onSelectChainSymbol) {
           <span>PCR: <strong style="color: #10b981;">${chain.pcr ? chain.pcr.toFixed(2) : '--'}</strong></span>
           <span>MAX PAIN: <strong style="color: #fbbf24;">${maxPain || '--'}</strong></span>
           <span style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); padding: 2px 7px; border-radius: 4px;">ATM ± 2: <strong style="color: #10b981;">${atmBuyingCount} BUYING 🟢</strong> <span style="color: var(--text-muted);">|</span> <strong style="color: #ef4444;">${atmSellingCount} SELLING 🛡️</strong></span>
+          <span style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); padding: 2px 7px; border-radius: 4px;" title="Intraday OI and Price trend sparklines infused for ATM ± 3 strikes">ATM ± 3 Sparklines: <strong style="color: #38bdf8;">ACTIVE</strong></span>
           <span class="logo-badge" style="color: #10b981;">● ${chain.source || 'FYERS_LIVE'}</span>
         </div>
       </div>
@@ -502,19 +573,32 @@ export function renderChainTable(container, onSelectChainSymbol) {
               const peBarWidth = Math.min(100, Math.max(2, (peOI / maxPeOI) * 100));
 
               const isAtm2 = Math.abs(strike - atm) <= (2 * step) + 0.1;
+              const isAtm3 = Math.abs(strike - atm) <= (3 * step) + 0.1;
               const ceSig = getPineScriptSignal(ce, strike, spot, atm, step, 'CE');
               const peSig = getPineScriptSignal(pe, strike, spot, atm, step, 'PE');
               const combinedSig = getCombinedStrikeSignal(ceSig, peSig, strike, atm, step);
 
+              // Look up ATM +- 3 sparkline timeseries
+              const ceKeyInt = `${Math.round(strike)}_CE`;
+              const peKeyInt = `${Math.round(strike)}_PE`;
+              const ceSparkData = isAtm3 ? (strikeSparklines[ceKeyInt] || strikeSparklines[`${strike}_CE`] || null) : null;
+              const peSparkData = isAtm3 ? (strikeSparklines[peKeyInt] || strikeSparklines[`${strike}_PE`] || null) : null;
+
+              const ceOiSparkSvg = ceSparkData ? renderStrikeSparklineSvg(ceSparkData.oi, 'oi', `${strike} CE`, ceSparkData.times, true) : '';
+              const cePriceSparkSvg = ceSparkData ? renderStrikeSparklineSvg(ceSparkData.price, 'price', `${strike} CE`, ceSparkData.times, true) : '';
+              const pePriceSparkSvg = peSparkData ? renderStrikeSparklineSvg(peSparkData.price, 'price', `${strike} PE`, peSparkData.times, false) : '';
+              const peOiSparkSvg = peSparkData ? renderStrikeSparklineSvg(peSparkData.oi, 'oi', `${strike} PE`, peSparkData.times, false) : '';
+
               // Dedicated PUTS FOCUS View
               if (activeMobileSide === 'PUTS') {
                 return `
-                  <div class="mobile-chain-row m-row-focus-puts ${isATM ? 'atm-row' : ''} ${isPutITM ? 'm-row-itm-pe' : ''}" data-strike="${strike}">
+                  <div class="mobile-chain-row m-row-focus-puts ${isATM ? 'atm-row' : ''} ${isAtm3 ? 'atm3-corridor-row' : ''} ${isPutITM ? 'm-row-itm-pe' : ''}" data-strike="${strike}">
                     <!-- Strike Cell -->
                     <div class="m-focus-strike-cell ${isATM ? 'atm-strike-cell' : ''}">
                       <div class="m-strike-num">${strike}</div>
                       ${isATM ? '<span class="m-atm-tag">ATM</span>' : ''}
                       ${isMaxPain ? '<span class="strike-maxpain-tag">Max Pain</span>' : ''}
+                      ${!isATM && isAtm3 ? `<span class="atm3-tag">${strike > atm ? '+' : '-'}${Math.round(Math.abs(strike - atm) / step)}</span>` : ''}
                     </div>
 
                     <!-- Put Buildup Signal & PineScript Signal -->
@@ -529,22 +613,28 @@ export function renderChainTable(container, onSelectChainSymbol) {
                       </span>
                     </div>
 
-                    <!-- Put OI & Gauge -->
-                    <div class="m-focus-oi-cell oi-cell">
-                      <div class="oi-gauge-bar oi-gauge-pe" style="width: ${peBarWidth}%;"></div>
-                      <span class="oi-val-text">${fmtNumber(peOI)}</span>
-                      <span style="font-size: 9px; color: ${peOIChgPct >= 0 ? '#10b981' : '#ef4444'}; margin-left: 3px;">
-                        ${peOIChgPct >= 0 ? '+' : ''}${peOIChgPct}%
-                      </span>
+                    <!-- Put OI & Gauge & Sparkline -->
+                    <div class="m-focus-oi-cell oi-cell" style="display: flex; flex-direction: column; align-items: flex-start;">
+                      <div style="display: flex; align-items: center; width: 100%;">
+                        <div class="oi-gauge-bar oi-gauge-pe" style="width: ${peBarWidth}%;"></div>
+                        <span class="oi-val-text">${fmtNumber(peOI)}</span>
+                        <span style="font-size: 9px; color: ${peOIChgPct >= 0 ? '#10b981' : '#ef4444'}; margin-left: 3px;">
+                          ${peOIChgPct >= 0 ? '+' : ''}${peOIChgPct}%
+                        </span>
+                      </div>
+                      ${peOiSparkSvg ? `<div class="spark-wrapper" style="margin-top: 2px;">${peOiSparkSvg}</div>` : ''}
                     </div>
 
-                    <!-- Put LTP & % -->
-                    <div class="m-focus-ltp-cell">
-                      <span class="m-ltp-val">${peLTP ? peLTP.toFixed(2) : '-'}</span>
-                      <span class="m-pchg-val ${pePChg >= 0 ? 'text-bull' : 'text-bear'}">
-                        ${pePChg >= 0 ? '+' : ''}${pePChg.toFixed(1)}%
-                      </span>
-                      ${isDeepPutITM ? '<span class="itm-warning" title="Deep In-The-Money (ITM) Strike: Caution - Lower liquidity, wide bid-ask spread & exercise risk" style="cursor: help;">⚠️</span>' : ''}
+                    <!-- Put LTP & % & Sparkline -->
+                    <div class="m-focus-ltp-cell" style="display: flex; flex-direction: column; align-items: flex-end;">
+                      <div style="display: flex; align-items: center; gap: 3px;">
+                        <span class="m-ltp-val">${peLTP ? peLTP.toFixed(2) : '-'}</span>
+                        <span class="m-pchg-val ${pePChg >= 0 ? 'text-bull' : 'text-bear'}">
+                          ${pePChg >= 0 ? '+' : ''}${pePChg.toFixed(1)}%
+                        </span>
+                        ${isDeepPutITM ? '<span class="itm-warning" title="Deep In-The-Money (ITM) Strike: Caution - Lower liquidity, wide bid-ask spread & exercise risk" style="cursor: help;">⚠️</span>' : ''}
+                      </div>
+                      ${pePriceSparkSvg ? `<div class="spark-wrapper" style="margin-top: 2px;">${pePriceSparkSvg}</div>` : ''}
                     </div>
                   </div>
                 `;
@@ -553,23 +643,29 @@ export function renderChainTable(container, onSelectChainSymbol) {
               // Dedicated CALLS FOCUS View
               if (activeMobileSide === 'CALLS') {
                 return `
-                  <div class="mobile-chain-row m-row-focus-calls ${isATM ? 'atm-row' : ''} ${isCallITM ? 'm-row-itm-ce' : ''}" data-strike="${strike}">
-                    <!-- Call LTP & % -->
-                    <div class="m-focus-ltp-cell" style="justify-content: flex-start;">
-                      ${isDeepCallITM ? '<span class="itm-warning" title="Deep In-The-Money (ITM) Strike: Caution - Lower liquidity, wide bid-ask spread & exercise risk" style="cursor: help;">⚠️</span>' : ''}
-                      <span class="m-ltp-val">${ceLTP ? ceLTP.toFixed(2) : '-'}</span>
-                      <span class="m-pchg-val ${cePChg >= 0 ? 'text-bull' : 'text-bear'}">
-                        ${cePChg >= 0 ? '+' : ''}${cePChg.toFixed(1)}%
-                      </span>
+                  <div class="mobile-chain-row m-row-focus-calls ${isATM ? 'atm-row' : ''} ${isAtm3 ? 'atm3-corridor-row' : ''} ${isCallITM ? 'm-row-itm-ce' : ''}" data-strike="${strike}">
+                    <!-- Call LTP & % & Sparkline -->
+                    <div class="m-focus-ltp-cell" style="display: flex; flex-direction: column; align-items: flex-start;">
+                      <div style="display: flex; align-items: center; gap: 3px;">
+                        ${isDeepCallITM ? '<span class="itm-warning" title="Deep In-The-Money (ITM) Strike: Caution - Lower liquidity, wide bid-ask spread & exercise risk" style="cursor: help;">⚠️</span>' : ''}
+                        <span class="m-ltp-val">${ceLTP ? ceLTP.toFixed(2) : '-'}</span>
+                        <span class="m-pchg-val ${cePChg >= 0 ? 'text-bull' : 'text-bear'}">
+                          ${cePChg >= 0 ? '+' : ''}${cePChg.toFixed(1)}%
+                        </span>
+                      </div>
+                      ${cePriceSparkSvg ? `<div class="spark-wrapper" style="margin-top: 2px;">${cePriceSparkSvg}</div>` : ''}
                     </div>
 
-                    <!-- Call OI & Gauge -->
-                    <div class="m-focus-oi-cell oi-cell">
-                      <div class="oi-gauge-bar oi-gauge-ce" style="width: ${ceBarWidth}%;"></div>
-                      <span class="oi-val-text">${fmtNumber(ceOI)}</span>
-                      <span style="font-size: 9px; color: ${ceOIChgPct >= 0 ? '#10b981' : '#ef4444'}; margin-left: 3px;">
-                        ${ceOIChgPct >= 0 ? '+' : ''}${ceOIChgPct}%
-                      </span>
+                    <!-- Call OI & Gauge & Sparkline -->
+                    <div class="m-focus-oi-cell oi-cell" style="display: flex; flex-direction: column; align-items: flex-start;">
+                      <div style="display: flex; align-items: center; width: 100%;">
+                        <div class="oi-gauge-bar oi-gauge-ce" style="width: ${ceBarWidth}%;"></div>
+                        <span class="oi-val-text">${fmtNumber(ceOI)}</span>
+                        <span style="font-size: 9px; color: ${ceOIChgPct >= 0 ? '#10b981' : '#ef4444'}; margin-left: 3px;">
+                          ${ceOIChgPct >= 0 ? '+' : ''}${ceOIChgPct}%
+                        </span>
+                      </div>
+                      ${ceOiSparkSvg ? `<div class="spark-wrapper" style="margin-top: 2px;">${ceOiSparkSvg}</div>` : ''}
                     </div>
 
                     <!-- Call Buildup Signal & PineScript Signal -->
@@ -589,6 +685,7 @@ export function renderChainTable(container, onSelectChainSymbol) {
                       <div class="m-strike-num">${strike}</div>
                       ${isATM ? '<span class="m-atm-tag">ATM</span>' : ''}
                       ${isMaxPain ? '<span class="strike-maxpain-tag">Max Pain</span>' : ''}
+                      ${!isATM && isAtm3 ? `<span class="atm3-tag">${strike > atm ? '+' : '-'}${Math.round(Math.abs(strike - atm) / step)}</span>` : ''}
                     </div>
                   </div>
                 `;
@@ -596,12 +693,13 @@ export function renderChainTable(container, onSelectChainSymbol) {
 
               // Dual BOTH View (Strike Centered)
               return `
-                <div class="mobile-chain-row ${isATM ? 'atm-row' : ''} ${isCallITM ? 'm-row-itm-ce' : ''} ${isPutITM ? 'm-row-itm-pe' : ''}" data-strike="${strike}">
+                <div class="mobile-chain-row ${isATM ? 'atm-row' : ''} ${isAtm3 ? 'atm3-corridor-row' : ''} ${isCallITM ? 'm-row-itm-ce' : ''} ${isPutITM ? 'm-row-itm-pe' : ''}" data-strike="${strike}">
                   <!-- Left: Call Metric Cell -->
                   <div class="m-call-cell ${isCallITM ? 'itm-call' : ''}">
                     ${renderMobileMetricCell('CE', activeMobileMetric, {
                       ltp: ceLTP, pchg: cePChg, oi: ceOI, oichg: ceOIChg, oichgpct: ceOIChgPct,
-                      vol: ceVol, build: ceBuild, sig: ceSig, barW: ceBarWidth, isDeep: isDeepCallITM
+                      vol: ceVol, build: ceBuild, sig: ceSig, barW: ceBarWidth, isDeep: isDeepCallITM,
+                      priceSpark: cePriceSparkSvg, oiSpark: ceOiSparkSvg
                     })}
                   </div>
 
@@ -610,6 +708,7 @@ export function renderChainTable(container, onSelectChainSymbol) {
                     <div class="m-strike-num">${strike}</div>
                     ${isMaxPain ? '<span class="strike-maxpain-tag">Max Pain</span>' : ''}
                     ${isATM ? '<span class="m-atm-tag">ATM</span>' : ''}
+                    ${!isATM && isAtm3 ? `<span class="atm3-tag">${strike > atm ? '+' : '-'}${Math.round(Math.abs(strike - atm) / step)}</span>` : ''}
                     ${combinedSig && combinedSig.isAtm2 && combinedSig.label !== '-' ? `
                       <span class="m-chain-sig-tag ${combinedSig.cls}" title="${combinedSig.tooltip}">${combinedSig.shortLabel || combinedSig.label}</span>
                     ` : ''}
@@ -619,7 +718,8 @@ export function renderChainTable(container, onSelectChainSymbol) {
                   <div class="m-put-cell ${isPutITM ? 'itm-put' : ''}">
                     ${renderMobileMetricCell('PE', activeMobileMetric, {
                       ltp: peLTP, pchg: pePChg, oi: peOI, oichg: peOIChg, oichgpct: peOIChgPct,
-                      vol: peVol, build: peBuild, sig: peSig, barW: peBarWidth, isDeep: isDeepPutITM
+                      vol: peVol, build: peBuild, sig: peSig, barW: peBarWidth, isDeep: isDeepPutITM,
+                      priceSpark: pePriceSparkSvg, oiSpark: peOiSparkSvg
                     })}
                   </div>
                 </div>
@@ -662,8 +762,8 @@ export function renderChainTable(container, onSelectChainSymbol) {
               <th style="width: 65px; text-align: center;">Buildup</th>
               <th style="text-align: right;">Volume</th>
               <th style="text-align: right;">OI Chg%</th>
-              <th style="text-align: right;">OI</th>
-              <th style="text-align: right;">LTP</th>
+              <th style="text-align: right;" title="Call Open Interest & Infused Intraday Trend Sparklines for ATM ± 3 strikes">OI &amp; Trend (ATM±3)</th>
+              <th style="text-align: right;" title="Call Last Traded Price & Infused Intraday Movement Sparklines for ATM ± 3 strikes">LTP &amp; Trend (ATM±3)</th>
 
               <!-- Center (3 columns) -->
               <th class="col-strike" style="width: 85px;">Strike</th>
@@ -671,8 +771,8 @@ export function renderChainTable(container, onSelectChainSymbol) {
               <th class="col-iv" style="width: 50px;">IV</th>
 
               <!-- Puts (6 columns) -->
-              <th style="text-align: left;">LTP</th>
-              <th style="text-align: left;">OI</th>
+              <th style="text-align: left;" title="Put Last Traded Price & Infused Intraday Movement Sparklines for ATM ± 3 strikes">LTP &amp; Trend (ATM±3)</th>
+              <th style="text-align: left;" title="Put Open Interest & Infused Intraday Trend Sparklines for ATM ± 3 strikes">OI &amp; Trend (ATM±3)</th>
               <th style="text-align: left;">OI Chg%</th>
               <th style="text-align: left;">Volume</th>
               <th style="width: 65px; text-align: center;">Buildup</th>
@@ -710,11 +810,23 @@ export function renderChainTable(container, onSelectChainSymbol) {
               const pePChg = pe.pChange || 0;
               const peBuild = getBuildup(pePChg, peOIChg);
 
-              // PineScript ATM +- 2 Signals
+              // PineScript ATM +- 2 Signals & ATM +- 3 Corridor
               const isAtm2 = Math.abs(strike - atm) <= (2 * step) + 0.1;
+              const isAtm3 = Math.abs(strike - atm) <= (3 * step) + 0.1;
               const ceSig = getPineScriptSignal(ce, strike, spot, atm, step, 'CE');
               const peSig = getPineScriptSignal(pe, strike, spot, atm, step, 'PE');
               const combinedSig = getCombinedStrikeSignal(ceSig, peSig, strike, atm, step);
+
+              // Look up ATM +- 3 sparkline timeseries
+              const ceKeyInt = `${Math.round(strike)}_CE`;
+              const peKeyInt = `${Math.round(strike)}_PE`;
+              const ceSparkData = isAtm3 ? (strikeSparklines[ceKeyInt] || strikeSparklines[`${strike}_CE`] || null) : null;
+              const peSparkData = isAtm3 ? (strikeSparklines[peKeyInt] || strikeSparklines[`${strike}_PE`] || null) : null;
+
+              const ceOiSparkSvg = ceSparkData ? renderStrikeSparklineSvg(ceSparkData.oi, 'oi', `${strike} CE`, ceSparkData.times, true) : '';
+              const cePriceSparkSvg = ceSparkData ? renderStrikeSparklineSvg(ceSparkData.price, 'price', `${strike} CE`, ceSparkData.times, true) : '';
+              const pePriceSparkSvg = peSparkData ? renderStrikeSparklineSvg(peSparkData.price, 'price', `${strike} PE`, peSparkData.times, false) : '';
+              const peOiSparkSvg = peSparkData ? renderStrikeSparklineSvg(peSparkData.oi, 'oi', `${strike} PE`, peSparkData.times, false) : '';
 
               // Heatmap class for Call Volume
               let ceVolClass = '';
@@ -739,7 +851,7 @@ export function renderChainTable(container, onSelectChainSymbol) {
               const peIsPeak = peOI === maxPeOI && peOI > 0;
 
               return `
-                <tr class="${isATM ? 'atm-row' : ''} ${isAtm2 ? 'atm2-corridor-row' : ''}">
+                <tr class="${isATM ? 'atm-row' : ''} ${isAtm2 ? 'atm2-corridor-row' : ''} ${isAtm3 ? 'atm3-corridor-row' : ''}">
                   <!-- 0. Call Hull Suite (Far Left) -->
                   <td class="${isCallITM ? 'itm-call' : ''}" style="text-align: center;">
                     ${renderContractHullBadge(ce, 'CE')}
@@ -762,25 +874,34 @@ export function renderChainTable(container, onSelectChainSymbol) {
                     ${ceOIChgPct >= 0 ? '+' : ''}${ceOIChgPct}%
                   </td>
 
-                  <!-- 4. Call OI with Relative Bar Gauge -->
+                  <!-- 4. Call OI with Relative Bar Gauge & ATM+-3 Trend Sparkline -->
                   <td class="${isCallITM ? 'itm-call' : ''} oi-cell ${ceIsPeak ? 'oi-peak-ce' : ''}">
                     <div class="oi-gauge-bar oi-gauge-ce" style="width: ${ceBarWidth}%;"></div>
-                    <span class="oi-val-text">${fmtNumber(ceOI)}</span>
+                    <div class="chain-cell-stack stack-right">
+                      <span class="oi-val-text">${fmtNumber(ceOI)}</span>
+                      ${ceOiSparkSvg ? `<div class="spark-wrapper" title="${strike} CE OI Trend">${ceOiSparkSvg}</div>` : ''}
+                    </div>
                   </td>
 
-                  <!-- 5. Call LTP -->
+                  <!-- 5. Call LTP & ATM+-3 Price Movement Sparkline -->
                   <td class="${isCallITM ? 'itm-call' : ''}" style="text-align: right; font-weight: 700;">
-                    ${isDeepCallITM ? '<span class="itm-warning" title="Deep In-The-Money (ITM) Strike: Caution - Lower liquidity, wide bid-ask spread & exercise risk" style="cursor: help; margin-right: 3px;">⚠️</span>' : ''}
-                    <span>${ceLTP ? ceLTP.toFixed(2) : '-'}</span>
-                    <span style="font-size: 9.5px; margin-left: 4px; color: ${cePChg >= 0 ? '#10b981' : '#ef4444'};">
-                      ${cePChg >= 0 ? '+' : ''}${cePChg.toFixed(0)}%
-                    </span>
+                    <div class="chain-cell-stack stack-right">
+                      <div style="display: flex; align-items: center; justify-content: flex-end;">
+                        ${isDeepCallITM ? '<span class="itm-warning" title="Deep In-The-Money (ITM) Strike: Caution - Lower liquidity, wide bid-ask spread & exercise risk" style="cursor: help; margin-right: 3px;">⚠️</span>' : ''}
+                        <span>${ceLTP ? ceLTP.toFixed(2) : '-'}</span>
+                        <span style="font-size: 9.5px; margin-left: 4px; color: ${cePChg >= 0 ? '#10b981' : '#ef4444'};">
+                          ${cePChg >= 0 ? '+' : ''}${cePChg.toFixed(0)}%
+                        </span>
+                      </div>
+                      ${cePriceSparkSvg ? `<div class="spark-wrapper" title="${strike} CE Price Trend">${cePriceSparkSvg}</div>` : ''}
+                    </div>
                   </td>
 
                   <!-- 6. Strike Column (Center) -->
                   <td class="chain-strike-cell">
                     <div>${strike}</div>
                     ${isMaxPain ? '<span class="strike-maxpain-tag">Max Pain</span>' : ''}
+                    ${!isATM && isAtm3 ? `<span class="atm3-tag" title="ATM ± 3 corridor strike">${strike > atm ? '+' : '-'}${Math.round(Math.abs(strike - atm) / step)}</span>` : ''}
                   </td>
 
                   <!-- 7. Signal (ATM+-2) Column (Center) -->
@@ -793,19 +914,27 @@ export function renderChainTable(container, onSelectChainSymbol) {
                     ${ce.impliedVolatility ? ce.impliedVolatility.toFixed(1) : (pe.impliedVolatility ? pe.impliedVolatility.toFixed(1) : '-')}
                   </td>
 
-                  <!-- 9. Put LTP -->
+                  <!-- 9. Put LTP & ATM+-3 Price Movement Sparkline -->
                   <td class="${isPutITM ? 'itm-put' : ''}" style="text-align: left; font-weight: 700;">
-                    <span>${peLTP ? peLTP.toFixed(2) : '-'}</span>
-                    <span style="font-size: 9.5px; margin-left: 4px; color: ${pePChg >= 0 ? '#10b981' : '#ef4444'};">
-                      ${pePChg >= 0 ? '+' : ''}${pePChg.toFixed(0)}%
-                    </span>
-                    ${isDeepPutITM ? '<span class="itm-warning" title="Deep In-The-Money (ITM) Strike: Caution - Lower liquidity, wide bid-ask spread & exercise risk" style="cursor: help; margin-left: 3px;">⚠️</span>' : ''}
+                    <div class="chain-cell-stack stack-left">
+                      <div style="display: flex; align-items: center; justify-content: flex-start;">
+                        <span>${peLTP ? peLTP.toFixed(2) : '-'}</span>
+                        <span style="font-size: 9.5px; margin-left: 4px; color: ${pePChg >= 0 ? '#10b981' : '#ef4444'};">
+                          ${pePChg >= 0 ? '+' : ''}${pePChg.toFixed(0)}%
+                        </span>
+                        ${isDeepPutITM ? '<span class="itm-warning" title="Deep In-The-Money (ITM) Strike: Caution - Lower liquidity, wide bid-ask spread & exercise risk" style="cursor: help; margin-left: 3px;">⚠️</span>' : ''}
+                      </div>
+                      ${pePriceSparkSvg ? `<div class="spark-wrapper" title="${strike} PE Price Trend">${pePriceSparkSvg}</div>` : ''}
+                    </div>
                   </td>
 
-                  <!-- 10. Put OI with Relative Bar Gauge -->
+                  <!-- 10. Put OI with Relative Bar Gauge & ATM+-3 Trend Sparkline -->
                   <td class="${isPutITM ? 'itm-put' : ''} oi-cell ${peIsPeak ? 'oi-peak-pe' : ''}" style="text-align: left; padding-left: 8px;">
                     <div class="oi-gauge-bar oi-gauge-pe" style="width: ${peBarWidth}%;"></div>
-                    <span class="oi-val-text">${fmtNumber(peOI)}</span>
+                    <div class="chain-cell-stack stack-left">
+                      <span class="oi-val-text">${fmtNumber(peOI)}</span>
+                      ${peOiSparkSvg ? `<div class="spark-wrapper" title="${strike} PE OI Trend">${peOiSparkSvg}</div>` : ''}
+                    </div>
                   </td>
 
                   <!-- 11. Put OI Chg% -->
@@ -907,7 +1036,7 @@ export function renderChainTable(container, onSelectChainSymbol) {
   container.querySelectorAll('[data-m-metric]').forEach(btn => {
     btn.addEventListener('click', () => {
       const metric = btn.getAttribute('data-m-metric');
-      setMobileMetric(container, metric, visibleStrikes, spot, atm, maxCeOI, maxPeOI, step);
+      setMobileMetric(container, metric, visibleStrikes, spot, atm, maxCeOI, maxPeOI, step, strikeSparklines);
     });
   });
 
@@ -1015,22 +1144,28 @@ function renderMobileMetricCell(side, metricId, data) {
 
   if (metricId === 'PRICE') {
     return `
-      <div class="m-cell-content" style="justify-content: ${align};">
-        ${isCE && data.isDeep ? '<span class="itm-warning" title="Deep In-The-Money (ITM) Strike: Caution - Lower liquidity, wide bid-ask spread & exercise risk" style="cursor: help;">⚠️</span>' : ''}
-        <span class="m-ltp-val">${data.ltp ? data.ltp.toFixed(2) : '-'}</span>
-        <span class="m-pchg-val ${data.pchg >= 0 ? 'text-bull' : 'text-bear'}">
-          ${data.pchg >= 0 ? '+' : ''}${data.pchg.toFixed(0)}%
-        </span>
-        ${!isCE && data.isDeep ? '<span class="itm-warning" title="Deep In-The-Money (ITM) Strike: Caution - Lower liquidity, wide bid-ask spread & exercise risk" style="cursor: help;">⚠️</span>' : ''}
+      <div class="m-cell-content" style="justify-content: ${align}; flex-direction: column; align-items: ${align};">
+        <div style="display: flex; align-items: center; justify-content: ${align}; gap: 3px;">
+          ${isCE && data.isDeep ? '<span class="itm-warning" title="Deep In-The-Money (ITM) Strike: Caution - Lower liquidity, wide bid-ask spread & exercise risk" style="cursor: help;">⚠️</span>' : ''}
+          <span class="m-ltp-val">${data.ltp ? data.ltp.toFixed(2) : '-'}</span>
+          <span class="m-pchg-val ${data.pchg >= 0 ? 'text-bull' : 'text-bear'}">
+            ${data.pchg >= 0 ? '+' : ''}${data.pchg.toFixed(0)}%
+          </span>
+          ${!isCE && data.isDeep ? '<span class="itm-warning" title="Deep In-The-Money (ITM) Strike: Caution - Lower liquidity, wide bid-ask spread & exercise risk" style="cursor: help;">⚠️</span>' : ''}
+        </div>
+        ${data.priceSpark ? `<div class="spark-wrapper" style="margin-top: 2px;">${data.priceSpark}</div>` : ''}
       </div>
     `;
   }
 
   if (metricId === 'OI') {
     return `
-      <div class="m-cell-content oi-cell" style="justify-content: ${align}; width: 100%;">
-        <div class="oi-gauge-bar ${isCE ? 'oi-gauge-ce' : 'oi-gauge-pe'}" style="width: ${data.barW}%;"></div>
-        <span class="oi-val-text">${fmtNumber(data.oi)}</span>
+      <div class="m-cell-content oi-cell" style="justify-content: ${align}; width: 100%; flex-direction: column; align-items: ${align};">
+        <div style="display: flex; align-items: center; width: 100%; justify-content: ${align};">
+          <div class="oi-gauge-bar ${isCE ? 'oi-gauge-ce' : 'oi-gauge-pe'}" style="width: ${data.barW}%;"></div>
+          <span class="oi-val-text">${fmtNumber(data.oi)}</span>
+        </div>
+        ${data.oiSpark ? `<div class="spark-wrapper" style="margin-top: 2px;">${data.oiSpark}</div>` : ''}
       </div>
     `;
   }
@@ -1073,19 +1208,22 @@ function renderMobileMetricCell(side, metricId, data) {
 
   // DUAL (Price + OI)
   return `
-    <div class="m-cell-content m-dual-cell" style="justify-content: ${align};">
-      ${isCE ? `
-        <span class="m-dual-sub">${fmtNumber(data.oi)}</span>
-        <span class="m-dual-main">${data.ltp ? data.ltp.toFixed(1) : '-'}</span>
-      ` : `
-        <span class="m-dual-main">${data.ltp ? data.ltp.toFixed(1) : '-'}</span>
-        <span class="m-dual-sub">${fmtNumber(data.oi)}</span>
-      `}
+    <div class="m-cell-content m-dual-cell" style="justify-content: ${align}; flex-direction: column; align-items: ${align};">
+      <div style="display: flex; align-items: center; justify-content: ${align}; gap: 5px;">
+        ${isCE ? `
+          <span class="m-dual-sub">${fmtNumber(data.oi)}</span>
+          <span class="m-dual-main">${data.ltp ? data.ltp.toFixed(1) : '-'}</span>
+        ` : `
+          <span class="m-dual-main">${data.ltp ? data.ltp.toFixed(1) : '-'}</span>
+          <span class="m-dual-sub">${fmtNumber(data.oi)}</span>
+        `}
+      </div>
+      ${data.priceSpark ? `<div class="spark-wrapper" style="margin-top: 2px;">${data.priceSpark}</div>` : ''}
     </div>
   `;
 }
 
-function setMobileMetric(container, metricId, visibleStrikes, spot, atm, maxCeOI, maxPeOI, step) {
+function setMobileMetric(container, metricId, visibleStrikes, spot, atm, maxCeOI, maxPeOI, step, strikeSparklines = {}) {
   if (activeMobileMetric === metricId) return;
   activeMobileMetric = metricId;
 
@@ -1142,8 +1280,20 @@ function setMobileMetric(container, metricId, visibleStrikes, spot, atm, maxCeOI
     const peBarWidth = Math.min(100, Math.max(2, (peOI / maxPeOI) * 100));
 
     const isAtm2 = Math.abs(strike - atm) <= (2 * step) + 0.1;
+    const isAtm3 = Math.abs(strike - atm) <= (3 * step) + 0.1;
     const ceSig = getPineScriptSignal(ce, strike, spot, atm, step, 'CE');
     const peSig = getPineScriptSignal(pe, strike, spot, atm, step, 'PE');
+
+    // Look up ATM +- 3 sparkline timeseries
+    const ceKeyInt = `${Math.round(strike)}_CE`;
+    const peKeyInt = `${Math.round(strike)}_PE`;
+    const ceSparkData = isAtm3 ? (strikeSparklines[ceKeyInt] || strikeSparklines[`${strike}_CE`] || null) : null;
+    const peSparkData = isAtm3 ? (strikeSparklines[peKeyInt] || strikeSparklines[`${strike}_PE`] || null) : null;
+
+    const ceOiSparkSvg = ceSparkData ? renderStrikeSparklineSvg(ceSparkData.oi, 'oi', `${strike} CE`, ceSparkData.times, true) : '';
+    const cePriceSparkSvg = ceSparkData ? renderStrikeSparklineSvg(ceSparkData.price, 'price', `${strike} CE`, ceSparkData.times, true) : '';
+    const pePriceSparkSvg = peSparkData ? renderStrikeSparklineSvg(peSparkData.price, 'price', `${strike} PE`, peSparkData.times, false) : '';
+    const peOiSparkSvg = peSparkData ? renderStrikeSparklineSvg(peSparkData.oi, 'oi', `${strike} PE`, peSparkData.times, false) : '';
 
     const callCell = rowEl.querySelector('.m-call-cell');
     const putCell = rowEl.querySelector('.m-put-cell');
@@ -1151,7 +1301,8 @@ function setMobileMetric(container, metricId, visibleStrikes, spot, atm, maxCeOI
     if (callCell) {
       callCell.innerHTML = renderMobileMetricCell('CE', metricId, {
         ltp: ceLTP, pchg: cePChg, oi: ceOI, oichg: ceOIChg, oichgpct: ceOIChgPct,
-        vol: ceVol, build: ceBuild, sig: ceSig, barW: ceBarWidth, isDeep: isDeepCallITM
+        vol: ceVol, build: ceBuild, sig: ceSig, barW: ceBarWidth, isDeep: isDeepCallITM,
+        priceSpark: cePriceSparkSvg, oiSpark: ceOiSparkSvg
       });
       callCell.classList.add('m-metric-animate');
       setTimeout(() => callCell.classList.remove('m-metric-animate'), 200);
@@ -1160,7 +1311,8 @@ function setMobileMetric(container, metricId, visibleStrikes, spot, atm, maxCeOI
     if (putCell) {
       putCell.innerHTML = renderMobileMetricCell('PE', metricId, {
         ltp: peLTP, pchg: pePChg, oi: peOI, oichg: peOIChg, oichgpct: peOIChgPct,
-        vol: peVol, build: peBuild, sig: peSig, barW: peBarWidth, isDeep: isDeepPutITM
+        vol: peVol, build: peBuild, sig: peSig, barW: peBarWidth, isDeep: isDeepPutITM,
+        priceSpark: pePriceSparkSvg, oiSpark: peOiSparkSvg
       });
       putCell.classList.add('m-metric-animate');
       setTimeout(() => putCell.classList.remove('m-metric-animate'), 200);

@@ -1,5 +1,5 @@
 import {ApiClient} from '../api.js';
-import {AccessGate} from './access_gate.js';
+import {AccessGate} from './access_gate.js?v=8.0.0';
 import {store} from '../state.js';
 const NAMES={hull:'Hull',alphatrend:'Alpha',shonya:'Shonya',ott:'OTT'};
 const NS='http://www.w3.org/2000/svg';

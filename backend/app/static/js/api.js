@@ -6,23 +6,25 @@ export const ApiClient = {
   baseUrl: window.location.origin,
 
   _getAuthHeaders() {
-    return {};
+    const token = localStorage.getItem('terminal_access_token') || sessionStorage.getItem('terminal_access_token');
+    const headers = {};
+    if (token) {
+      headers['X-Access-Token'] = token;
+    }
+    return headers;
   },
 
   async get(endpoint) {
     try {
       const headers = this._getAuthHeaders();
-      const res = await fetch(`${this.baseUrl}${endpoint}`, { headers, signal: AbortSignal.timeout(15000) });
+      const res = await fetch(`${this.baseUrl}${endpoint}`, { headers });
       if (res.status === 401 && !endpoint.startsWith('/api/access/')) {
         window.dispatchEvent(new CustomEvent('terminal:unauthorized'));
         throw new Error('Unauthorized');
       }
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      const data = await res.json();
-      if (endpoint.startsWith('/api/market/') && data.source) window.dispatchEvent(new CustomEvent('terminal:data-status', {detail:{source:data.source,age:data.cache_age_seconds}}));
-      return data;
+      return await res.json();
     } catch (err) {
-      if (endpoint.startsWith("/api/market/")) window.dispatchEvent(new CustomEvent("terminal:data-status", {detail:{error:true}}));
       console.warn(`API GET error on ${endpoint}:`, err);
       return null;
     }
@@ -33,7 +35,6 @@ export const ApiClient = {
       const headers = { 'Content-Type': 'application/json', ...this._getAuthHeaders() };
       const res = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'POST',
-        signal: AbortSignal.timeout(15000),
         headers,
         body: JSON.stringify(data),
       });
@@ -58,7 +59,7 @@ export const ApiClient = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
-        password: password,
+        password: password.trim(),
         remember_device: !!rememberDevice 
       })
     });
@@ -66,13 +67,24 @@ export const ApiClient = {
     if (!res.ok) {
       throw new Error(data.detail || 'Invalid access key.');
     }
+    if (data.token) {
+      if (rememberDevice) {
+        localStorage.setItem('terminal_access_token', data.token);
+        localStorage.setItem('terminal_device_trusted', 'true');
+        sessionStorage.removeItem('terminal_access_token');
+      } else {
+        sessionStorage.setItem('terminal_access_token', data.token);
+        localStorage.removeItem('terminal_access_token');
+        localStorage.removeItem('terminal_device_trusted');
+      }
+    }
     return data;
   },
 
   async checkAccess() {
     try {
       const headers = this._getAuthHeaders();
-      const res = await fetch(`${this.baseUrl}/api/access/check`, { headers, signal: AbortSignal.timeout(15000) });
+      const res = await fetch(`${this.baseUrl}/api/access/check`, { headers });
       if (!res.ok) return false;
       const data = await res.json();
       return !!data.authenticated;
@@ -228,6 +240,13 @@ export const ApiClient = {
     return this.post('/api/fyers/token', { access_token: token });
   },
 
+  exchangeFyersCode(code, redirectUri = null) {
+    return this.post('/api/fyers/exchange', {
+      auth_code: code,
+      redirect_uri: redirectUri || `${window.location.origin}/api/fyers/callback`
+    });
+  },
+
   saveFyersCredentials(clientId, secretKey, redirectUri) {
     return this.post('/api/fyers/credentials', {
       client_id: clientId,
@@ -336,10 +355,6 @@ export class StreamClient {
     this.ws = null;
     this.activeSymbol = 'NIFTY';
     this.reconnectTimer = null;
-    this.retryCount = 0;
-    window.addEventListener('terminal:unlocked', () => {
-      if (!this.ws || this.ws.readyState > WebSocket.OPEN) this.connect();
-    });
   }
 
   connect() {
@@ -350,11 +365,6 @@ export class StreamClient {
       this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = () => {
-        this.retryCount = 0;
-        clearInterval(this.heartbeatTimer);
-        this.heartbeatTimer = setInterval(() => {
-          if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify({action:'ping'}));
-        }, 25000);
         if (this.onStatusChange) this.onStatusChange(true);
         this.subscribe(this.activeSymbol);
       };
@@ -368,10 +378,8 @@ export class StreamClient {
         }
       };
 
-      this.ws.onclose = (event) => {
-        clearInterval(this.heartbeatTimer);
+      this.ws.onclose = () => {
         if (this.onStatusChange) this.onStatusChange(false);
-        if (event.code === 1008) { window.dispatchEvent(new CustomEvent("terminal:unauthorized")); return; }
         this.scheduleReconnect();
       };
 
@@ -392,6 +400,6 @@ export class StreamClient {
 
   scheduleReconnect() {
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
-    this.reconnectTimer = setTimeout(() => this.connect(), Math.min(30000, 1000 * 2 ** this.retryCount++) + Math.random() * 1000);
+    this.reconnectTimer = setTimeout(() => this.connect(), 3000);
   }
 }

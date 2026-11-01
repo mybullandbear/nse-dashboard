@@ -98,16 +98,12 @@ class SnapshotStorage:
                         is_atm INTEGER DEFAULT 0
                     )
                 """)
-                existing_columns = {row[1] for row in cursor.execute("PRAGMA table_info(intraday_strike_snapshots)")}
-                for column, sql_type in {"expiry_date":"TEXT","contract_symbol":"TEXT","bid":"REAL","ask":"REAL","source":"TEXT","quality_json":"TEXT"}.items():
-                    if column not in existing_columns:
-                        cursor.execute(f"ALTER TABLE intraday_strike_snapshots ADD COLUMN {column} {sql_type}")
                 cursor.execute("CREATE INDEX IF NOT EXISTS idx_strike_snap ON intraday_strike_snapshots(symbol, trade_date, time_str)")
                 conn.commit()
         except Exception as e:
             logger.error(f"Error initializing SQLite DB: {e}")
 
-    def save_snapshot(self, symbol: str, spot: float, ce_oi: int, pe_oi: int, ce_oi_chg: int, pe_oi_chg: int, pcr: float, confluence: Optional[float] = None, ce_vol: int = 0, pe_vol: int = 0):
+    def save_snapshot(self, symbol: str, spot: float, ce_oi: int, pe_oi: int, ce_oi_chg: int, pe_oi_chg: int, pcr: float, confluence: float = 50.0, ce_vol: int = 0, pe_vol: int = 0):
         try:
             now = get_current_ist()
             # Strictly enforce market trading days (Mon-Fri) and hours (09:15 to 15:40 IST)
@@ -540,17 +536,15 @@ class SnapshotStorage:
                         int(s.get("oi_chg", 0)),
                         float(s.get("oi_pchange", 0.0)),
                         int(s.get("volume", 0)),
-                        1 if s.get("is_atm") else 0,
-                        s.get("expiry_date"),s.get("contract_symbol"),s.get("bid"),s.get("ask"),s.get("source"),s.get("quality_json")
+                        1 if s.get("is_atm") else 0
                     )
                     for s in strikes_data
                 ]
                 cursor.executemany("""
                     INSERT INTO intraday_strike_snapshots (
                         symbol, trade_date, timestamp, time_str, strike, option_type,
-                        ltp, price_pchange, oi, oi_chg, oi_pchange, volume, is_atm,
-                        expiry_date,contract_symbol,bid,ask,source,quality_json
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ltp, price_pchange, oi, oi_chg, oi_pchange, volume, is_atm
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, params)
                 conn.commit()
         except Exception as e:
@@ -747,52 +741,108 @@ class SnapshotStorage:
                 "latest": {}
             }
 
-    def save_signal_decision(self, decision: Dict[str, Any], inputs: Dict[str, Any]):
-        """Persist the decision at its actual evaluation time; never rewrite earlier snapshots."""
-        import json
-        now = get_current_ist()
-        if now.weekday() >= 5 or not "09:15" <= now.strftime("%H:%M") < "15:40":
-            return
-        if inputs.get("source") in {"FROZEN", "STALE_CACHE", "MARKET_CLOSED", "SIMULATOR", "UNAVAILABLE"}:
-            return
-        with self._get_connection() as conn:
-            conn.execute("""CREATE TABLE IF NOT EXISTS decision_audit (
-                id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT NOT NULL,
-                timestamp TEXT NOT NULL, model_version TEXT NOT NULL,
-                data_source TEXT NOT NULL, decision_json TEXT NOT NULL,
-                inputs_json TEXT NOT NULL, UNIQUE(symbol,timestamp,model_version)
-            )""")
-            # One decision per minute: first observation wins, preserving causal timing.
-            prefix = now.isoformat()[:16]
-            version = decision.get("model_version", "unversioned")
-            conn.execute("BEGIN IMMEDIATE")
-            exists = conn.execute("SELECT 1 FROM decision_audit WHERE symbol=? AND substr(timestamp,1,16)=? AND model_version=? LIMIT 1", (decision["symbol"],prefix,version)).fetchone()
-            if exists:
-                return
-            conn.execute("INSERT INTO decision_audit(symbol,timestamp,model_version,data_source,decision_json,inputs_json) VALUES(?,?,?,?,?,?)",(decision["symbol"],now.isoformat(),version,inputs.get("source","UNKNOWN"),json.dumps(decision,allow_nan=False),json.dumps(inputs,allow_nan=False)))
-            conn.execute("INSERT INTO signal_history(symbol,trade_date,timestamp,direction,confluence,confidence,state,strategy,spot) VALUES(?,?,?,?,?,?,?,?,?)",(decision["symbol"],now.strftime("%Y-%m-%d"),now.isoformat(),decision["direction"],decision["confluence_score"],decision["confidence_pct"],decision["operational_state"],str(decision.get("strategy",{}).get("name","")),decision["spot_price"]))
+    def get_atm3_strike_sparklines(
+        self,
+        symbol: str,
+        atm_strike: float,
+        step: float = 50.0,
+        trade_date: Optional[str] = None,
+        max_time: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Retrieves downsampled intraday price and OI sparklines for ATM +- 3 strikes
+        (7 focus strikes, 14 contracts CE & PE) to infuse directly into the Option Chain Matrix.
+        """
+        try:
+            sym = symbol.upper()
+            if not atm_strike or atm_strike <= 0:
+                return {}
 
-    def get_strategy_bars(self, symbol: str, trade_date: str, as_of: str):
-        """Deterministic one-minute OHLC using only observations before as_of."""
-        with self._get_connection() as conn:
-            rows = conn.execute("""WITH ranked AS (
-                SELECT *, ROW_NUMBER() OVER(PARTITION BY time_str ORDER BY timestamp,id) first_row,
-                          ROW_NUMBER() OVER(PARTITION BY time_str ORDER BY timestamp DESC,id DESC) last_row
-                FROM intraday_snapshots
-                WHERE symbol=? AND trade_date=? AND time_str>='09:15'
-                  AND time_str<'15:40' AND timestamp<? AND time_str < substr(?,12,5)
-            ) SELECT symbol,trade_date,
-                     trade_date||'T'||time_str||':00+05:30' minute,
-                     MAX(CASE WHEN first_row=1 THEN spot END) open,
-                     MAX(spot) high,MIN(spot) low,
-                     MAX(CASE WHEN last_row=1 THEN spot END) spot,
-                     MAX(CASE WHEN last_row=1 THEN ce_oi END) ce_oi,
-                     MAX(CASE WHEN last_row=1 THEN pe_oi END) pe_oi,
-                     MAX(CASE WHEN last_row=1 THEN pcr END) pcr,
-                     MAX(timestamp) last_observation,COUNT(*) samples
-              FROM ranked GROUP BY time_str ORDER BY time_str""",
-              (symbol.upper(),trade_date,as_of,as_of)).fetchall()
-            return [dict(row) for row in rows]
+            step_val = float(step) if step and step > 0 else 50.0
+            strikes = [atm_strike + i * step_val for i in range(-3, 4)]
+            placeholders = ",".join(["?"] * len(strikes))
+
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                target_date = trade_date
+                if not target_date:
+                    now = get_current_ist()
+                    if now.weekday() < 5:
+                        today_str = now.strftime("%Y-%m-%d")
+                        cursor.execute(
+                            "SELECT 1 FROM intraday_strike_snapshots WHERE symbol = ? AND trade_date = ? LIMIT 1",
+                            (sym, today_str),
+                        )
+                        if cursor.fetchone():
+                            target_date = today_str
+                    if not target_date:
+                        cursor.execute(
+                            "SELECT DISTINCT trade_date FROM intraday_strike_snapshots WHERE symbol = ? ORDER BY trade_date DESC LIMIT 1",
+                            (sym,),
+                        )
+                        row = cursor.fetchone()
+                        target_date = row[0] if row else now.strftime("%Y-%m-%d")
+
+                query = f"""
+                    SELECT time_str, strike, option_type, ltp, oi, oi_chg
+                    FROM intraday_strike_snapshots
+                    WHERE symbol = ? AND trade_date = ? AND strike IN ({placeholders})
+                """
+                params: List[Any] = [sym, target_date] + strikes
+                if max_time:
+                    query += " AND time_str <= ?"
+                    params.append(max_time)
+
+                query += " ORDER BY time_str ASC"
+                cursor.execute(query, params)
+                rows = cursor.fetchall()
+
+                contracts: Dict[str, List[Dict[str, Any]]] = {}
+                for r in rows:
+                    t_str = r["time_str"]
+                    stk = float(r["strike"])
+                    otype = r["option_type"].upper()
+                    ltp = float(r["ltp"] or 0.0)
+                    oi_val = int(r["oi"] or 0)
+                    oi_chg = int(r["oi_chg"] or 0)
+
+                    stk_clean = int(stk) if stk.is_integer() else stk
+                    k = f"{stk_clean}_{otype}"
+                    if k not in contracts:
+                        contracts[k] = []
+                    contracts[k].append({
+                        "t": t_str,
+                        "p": round(ltp, 2),
+                        "oi": oi_val,
+                        "oic": oi_chg,
+                    })
+
+                sparklines = {}
+                for k, pts in contracts.items():
+                    if not pts:
+                        continue
+                    step_sample = max(1, len(pts) // 25)
+                    sampled = pts[::step_sample]
+                    if pts[-1] != sampled[-1]:
+                        sampled.append(pts[-1])
+
+                    sparklines[k] = {
+                        "price": [p["p"] for p in sampled],
+                        "oi": [p["oi"] for p in sampled],
+                        "oi_chg": [p["oic"] for p in sampled],
+                        "times": [p["t"] for p in sampled],
+                    }
+
+                return {
+                    "date": target_date,
+                    "symbol": sym,
+                    "atm": atm_strike,
+                    "step": step_val,
+                    "contracts": sparklines,
+                }
+        except Exception as e:
+            logger.error(f"Error fetching ATM+-3 strike sparklines: {e}")
+            return {}
 
     def cleanup_old_data(self, days_to_keep: int = 30):
         """Purges intraday snapshots, strike snapshots, and signal history older than 30 days while preserving recent sessions."""
@@ -802,10 +852,6 @@ class SnapshotStorage:
                 cursor = conn.cursor()
                 cursor.execute("DELETE FROM intraday_snapshots WHERE trade_date < ?", (cutoff,))
                 cursor.execute("DELETE FROM signal_history WHERE trade_date < ?", (cutoff,))
-                if cursor.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='decision_audit'").fetchone():
-                    cursor.execute("DELETE FROM decision_audit WHERE timestamp < ?", (cutoff,))
-                if cursor.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='strategy_shadow_decisions'").fetchone():
-                    cursor.execute("DELETE FROM strategy_shadow_decisions WHERE observation_minute < ?", (cutoff,))
                 cursor.execute("DELETE FROM intraday_strike_snapshots WHERE trade_date < ?", (cutoff,))
                 conn.commit()
                 logger.info(f"30-Day Retention Policy: Purged DB snapshots older than {cutoff}")
