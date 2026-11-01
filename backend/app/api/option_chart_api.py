@@ -34,25 +34,15 @@ async def get_option_chart_candles(
     """
     sym = symbol.upper()
 
-    # If strike not provided, determine ATM strike from live chain
+    if sym not in get_settings().TRACKED_SYMBOLS:
+        raise HTTPException(422, 'Unsupported index')
+    # Tick ingestion belongs to the central poller, never chart rendering.
     if strike is None or strike <= 0:
         raw_chain, _ = await fetch_live_chain_data(sym)
-        if raw_chain:
-            parsed = parse_option_chain(raw_chain, sym)
-            if parsed:
-                strike = parsed.atm_strike
-        if not strike:
-            strike = 23100.0 if sym == "NIFTY" else (55500.0 if sym == "BANKNIFTY" else 25000.0)
-
-    # Record current tick if live chain is available
-    try:
-        raw_chain, _ = await fetch_live_chain_data(sym)
-        if raw_chain:
-            parsed = parse_option_chain(raw_chain, sym)
-            if parsed:
-                option_candle_service.record_chain_ticks(parsed)
-    except Exception as e:
-        logger.debug(f"Tick record error: {e}")
+        parsed = parse_option_chain(raw_chain, sym) if raw_chain else None
+        if not parsed or parsed.atm_strike <= 0:
+            raise HTTPException(503, 'ATM unavailable; choose a recorded strike in Research')
+        strike = parsed.atm_strike
 
     chart_data = option_candle_service.get_option_chart_data(
         symbol=sym,
@@ -84,8 +74,7 @@ async def get_active_strikes_status(symbol: str):
     if not chain or not chain.strikes:
         raise HTTPException(status_code=503, detail=f"Failed to parse option chain for {sym}")
 
-    # Record latest ticks
-    option_candle_service.record_chain_ticks(chain)
+    # Central poller owns tick ingestion.
 
     spot = chain.spot_price
     atm = chain.atm_strike

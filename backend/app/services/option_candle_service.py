@@ -277,7 +277,10 @@ class OptionCandleService:
 
         candles: List[Dict[str, Any]] = []
         for t in sorted_times:
-            candles.append(bars[t])
+            # Signals and overlays must never consume the developing five-minute bar.
+            start = datetime.strptime(t, '%Y-%m-%d %H:%M').replace(tzinfo=now_dt.tzinfo)
+            if start + timedelta(minutes=5) <= now_dt and time(9,15) <= start.time() < time(15,40):
+                candles.append(dict(bars[t]))
 
         if len(candles) < 2:
             return {

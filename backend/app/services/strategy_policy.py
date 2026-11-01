@@ -42,11 +42,11 @@ class Policy:
         if not '09:15'<=self.entry_start<self.entry_end<self.force_exit<'15:40':raise ValueError('Policy hours must be within the session')
 
 
-def enrich(bars):
-    """Input timestamps are minute STARTS; outputs are available only at minute END."""
+def enrich(bars, timeframe_minutes=1):
+    """Input timestamps are bar starts; decisions become available at bar ends."""
     parts=[]
     for _,b in bars.groupby(['symbol','trade_date'],sort=True):
-        b=b.sort_values('minute').copy();b['decision_time']=b.minute+pd.Timedelta(minutes=1)
+        b=b.sort_values('minute').copy();b['decision_time']=b.minute+pd.Timedelta(minutes=timeframe_minutes)
         b['ema9']=b.spot.ewm(span=9,adjust=False).mean();b['ema21']=b.spot.ewm(span=21,adjust=False).mean()
         prev=b.spot.shift();tr=pd.concat([b.high-b.low,(b.high-prev).abs(),(b.low-prev).abs()],axis=1).max(axis=1)
         b['atr']=tr.ewm(alpha=1/14,adjust=False).mean().clip(lower=.01)
@@ -54,17 +54,18 @@ def enrich(bars):
         # The complete range is not exposed to any decision before 09:30.
         b['or_high']=np.where(b.decision_time.dt.strftime('%H:%M')>='09:30',b.loc[opening,'high'].max(),np.nan)
         b['or_low']=np.where(b.decision_time.dt.strftime('%H:%M')>='09:30',b.loc[opening,'low'].min(),np.nan)
-        b['range_ready']=(b.decision_time.dt.strftime('%H:%M')>='09:30') & (int(opening.sum())==15)
+        b['range_ready']=(b.decision_time.dt.strftime('%H:%M')>='09:30') & (int(opening.sum())==15//timeframe_minutes)
         b['momentum']=(b.spot-b.spot.shift(5))/b.atr
         b['oi_flow']=b.pe_oi.diff(5)-b.ce_oi.diff(5)
         b['trend_strength']=(b.ema9-b.ema21).abs()/b.atr
         b['prior_low']=b.low.shift();b['prior_high']=b.high.shift();b['prior_ema9']=b.ema9.shift()
-        gap=b.minute.diff().dt.total_seconds().eq(60)
+        gap=b.minute.diff().dt.total_seconds().eq(60*timeframe_minutes)
         b['contiguous']=gap.rolling(29,min_periods=29).min().eq(1)
         same=b[['spot','ce_oi','pe_oi']].eq(b[['spot','ce_oi','pe_oi']].shift()).all(axis=1)
         b['unchanged']=same.groupby((~same).cumsum()).cumsum()
         b['quality_ok']=b.contiguous & (b.unchanged<3)
-        if 'last_observation' in b:b['quality_ok'] &= (b.decision_time-b.last_observation).dt.total_seconds().between(0,30)
+        if 'last_observation' in b:b['quality_ok'] &= (b.decision_time-b.last_observation).dt.total_seconds().between(0,30 if timeframe_minutes==1 else 90)
+        if 'complete' in b:b['quality_ok'] &= b.complete.rolling(30,min_periods=30).min().eq(1)
         parts.append(b)
     return pd.concat(parts,ignore_index=True) if parts else pd.DataFrame()
 
