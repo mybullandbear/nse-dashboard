@@ -31,30 +31,30 @@ export function renderHeader(container, onPairChange, onSingleSymbolChange, onAu
 
     container.innerHTML = `
       <header class="top-header" style="
-        min-height: 52px; height: 52px;
+        min-height: 40px; height: 40px;
         background: #090d16;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         display: flex; align-items: center; justify-content: space-between;
-        padding: 0 18px; position: sticky; top: 0; z-index: 100;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        padding: 0 10px; position: sticky; top: 0; z-index: 100;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
       ">
         <!-- Brand Identity -->
-        <div class="logo-section" style="display: flex; align-items: center; gap: 10px;">
+        <div class="logo-section" style="display: flex; align-items: center; gap: 8px;">
           <div style="
-            width: 28px; height: 28px; border-radius: 6px;
+            width: 24px; height: 24px; border-radius: 5px;
             background: linear-gradient(135deg, #0284c7, #38bdf8);
             display: flex; align-items: center; justify-content: center;
-            font-size: 14px; font-weight: 900; color: #fff;
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+            font-size: 13px; font-weight: 900; color: #fff;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.35);
           ">⚡</div>
-          <div style="display: flex; align-items: baseline; gap: 6px;">
-            <span style="font-size: 14px; font-weight: 800; letter-spacing: 0.8px; color: #f8fafc; font-family: var(--font-sans);">MYBULLANDBEAR</span>
+          <div style="display: flex; align-items: baseline; gap: 5px;">
+            <span style="font-size: 13px; font-weight: 800; letter-spacing: 0.6px; color: #f8fafc; font-family: var(--font-sans);">MYBULLANDBEAR</span>
             <span style="
-              font-size: 9px; font-weight: 800; font-family: var(--font-mono);
+              font-size: 8.5px; font-weight: 800; font-family: var(--font-mono);
               color: #38bdf8; background: rgba(56, 189, 248, 0.12);
-              padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.25);
+              padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.25);
               letter-spacing: 0.5px;
-            ">TERMINAL</span>
+            ">PRO</span>
           </div>
         </div>
 
@@ -62,14 +62,14 @@ export function renderHeader(container, onPairChange, onSingleSymbolChange, onAu
         <div class="header-center" style="display: flex; align-items: center;">
           <div class="symbol-selector" id="pair-selector-group" style="
             display: inline-flex; background: rgba(15, 23, 42, 0.7);
-            padding: 3px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 2px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06);
             gap: 2px;
           ">
             <button class="pair-btn ${nb}" data-pair="NIFTY_BANKNIFTY" style="
               background: ${nb ? '#1e293b' : 'transparent'};
               color: ${nb ? '#38bdf8' : '#94a3b8'};
               border: 1px solid ${nb ? 'rgba(56, 189, 248, 0.3)' : 'transparent'};
-              font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+              font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 4px; cursor: pointer;
               transition: all 0.2s; font-family: var(--font-mono);
             ">
               NIFTY · BANKNIFTY
@@ -78,7 +78,7 @@ export function renderHeader(container, onPairChange, onSingleSymbolChange, onAu
               background: ${fm ? '#1e293b' : 'transparent'};
               color: ${fm ? '#38bdf8' : '#94a3b8'};
               border: 1px solid ${fm ? 'rgba(56, 189, 248, 0.3)' : 'transparent'};
-              font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+              font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 4px; cursor: pointer;
               transition: all 0.2s; font-family: var(--font-mono);
             ">
               FINNIFTY · MIDCAP
@@ -87,7 +87,7 @@ export function renderHeader(container, onPairChange, onSingleSymbolChange, onAu
               background: ${sx ? '#1e293b' : 'transparent'};
               color: ${sx ? '#38bdf8' : '#94a3b8'};
               border: 1px solid ${sx ? 'rgba(56, 189, 248, 0.3)' : 'transparent'};
-              font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+              font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 4px; cursor: pointer;
               transition: all 0.2s; font-family: var(--font-mono);
             ">
               SENSEX
@@ -96,19 +96,19 @@ export function renderHeader(container, onPairChange, onSingleSymbolChange, onAu
         </div>
 
         <!-- Header Actions & Telemetry -->
-        <div class="header-actions" style="display: flex; align-items: center; gap: 8px;">
+        <div class="header-actions" style="display: flex; align-items: center; gap: 6px;">
           <!-- Session Badge -->
           <div id="hdr-session-badge" style="
-            display: inline-flex; align-items: center; gap: 6px;
-            font-size: 10.5px; font-weight: 700; font-family: var(--font-mono);
-            padding: 4px 8px; border-radius: 6px;
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 10px; font-weight: 700; font-family: var(--font-mono);
+            padding: 2px 6px; border-radius: 4px;
             background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
             color: #cbd5e1;
           ">
             <span class="pulse-dot" style="
-              width: 6px; height: 6px; border-radius: 50%;
+              width: 5px; height: 5px; border-radius: 50%;
               background: ${isLive ? '#10b981' : '#64748b'};
-              box-shadow: ${isLive ? '0 0 6px #10b981' : 'none'};
+              box-shadow: ${isLive ? '0 0 5px #10b981' : 'none'};
             "></span>
             <span id="hdr-session-state">${session.session_state || 'OFF-MARKET'}</span>
             <span id="hdr-session-time" style="color: #64748b; margin-left: 2px;">${session.current_time_ist || ''} IST</span>
@@ -116,24 +116,24 @@ export function renderHeader(container, onPairChange, onSingleSymbolChange, onAu
 
           <!-- Data Source Chip -->
           <div id="hdr-datasource" style="
-            font-size: 10px; font-weight: 700; font-family: var(--font-mono);
-            padding: 4px 8px; border-radius: 6px;
+            font-size: 9.5px; font-weight: 700; font-family: var(--font-mono);
+            padding: 2px 6px; border-radius: 4px;
             background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
             color: #f59e0b;
           ">● LIVE</div>
 
           <!-- Fyers Connect Button -->
           <button class="btn-fyers" id="btn-open-fyers" style="
-            display: inline-flex; align-items: center; gap: 6px;
-            font-size: 11px; font-weight: 700; font-family: var(--font-mono);
-            padding: 4px 10px; border-radius: 6px; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 10px; font-weight: 700; font-family: var(--font-mono);
+            padding: 2px 8px; border-radius: 4px; cursor: pointer;
             background: ${fyers.has_token ? 'rgba(16, 185, 129, 0.12)' : 'rgba(14, 165, 233, 0.12)'};
             color: ${fyers.has_token ? '#34d399' : '#38bdf8'};
             border: 1px solid ${fyers.has_token ? 'rgba(16, 185, 129, 0.35)' : 'rgba(56, 189, 248, 0.35)'};
             transition: all 0.2s;
           ">
             <span id="hdr-fyers-dot" class="fyers-dot" style="
-              width: 6px; height: 6px; border-radius: 50%;
+              width: 5px; height: 5px; border-radius: 50%;
               background: ${fyers.has_token ? '#10b981' : '#38bdf8'};
             "></span>
             <span id="hdr-fyers-label">${fyers.has_token ? 'FYERS ACTIVE' : 'CONNECT FYERS'}</span>
@@ -142,7 +142,7 @@ export function renderHeader(container, onPairChange, onSingleSymbolChange, onAu
           <!-- Force Refresh -->
           <button class="btn-fyers" id="btn-manual-refresh" title="Force Refresh" style="
             background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
-            color: #94a3b8; font-size: 12px; padding: 4px 8px; border-radius: 6px; cursor: pointer;
+            color: #94a3b8; font-size: 11px; padding: 2px 6px; border-radius: 4px; cursor: pointer;
           ">
             ↻
           </button>
@@ -150,7 +150,7 @@ export function renderHeader(container, onPairChange, onSingleSymbolChange, onAu
           <!-- Lock Terminal -->
           <button class="btn-fyers" id="btn-lock-terminal" title="Lock Terminal" style="
             background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25);
-            color: #f87171; font-size: 11px; padding: 4px 8px; border-radius: 6px; cursor: pointer;
+            color: #f87171; font-size: 10.5px; padding: 2px 6px; border-radius: 4px; cursor: pointer;
           ">
             🔒
           </button>

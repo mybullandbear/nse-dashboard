@@ -2,6 +2,21 @@
 
 All notable changes, milestone implementations, and verified bug resolutions are documented in this file.
 
+## [2026-11-01] - MNC High-Density Zero-Scroll Workstation Redesign & Layout Overhaul
+- **Layout Architecture (Strict 100vh Full-Screen Discipline)**:
+  - Enforced `overflow: hidden` on `html`, `body`, and `.app-container`, completely eliminating document-level scrolling and dual scrollbars.
+  - Consolidated bulky `workspace-toolbar` (~90px) and `connection-line` (~40px) into a sleek 26px `micro-toolbar`, saving 124px of vertical height.
+  - Compacted top header to a razor-sharp 40px institutional bar with streamlined pair switches and telemetry badges.
+  - Re-positioned desktop module tabs into a sleek 32px tactile tab strip directly under the header.
+- **Option Chain Matrix (Sensibull 13-Column High-Density)**:
+  - Enforced double-sticky headers (`thead tr th`) pinned to top: 0 and top: 24px so column headers never scroll out of view.
+  - Scaled inline SVG sparklines to 60px x 14px to prevent row height bloat.
+  - Added full-height flex container (`#content-mount > .glass-panel`, `.chain-table-container`) allowing smooth internal scrolling across all 100 strikes.
+- **Bug Fix (DOM Structure)**:
+  - Fixed HTML nesting syntax bug in `dashboard_view.js` (premature closing div) and adjusted parameter matrix table and bottom analytics grid to flex-fit the viewport.
+- **Design System (`neumorphism.css`)**:
+  - Overhauled master neumorphic theme with refined dual shadows, compact padding (4px-8px), tabular typography (`JetBrains Mono`), and tactile embossed controls.
+
 ## [2026-11-01] - ATM+-3 Option Chain Sparklines & Neumorphic Architecture Initialization
 - **Feature (Option Chain Sparklines)**:
   - Added `get_atm3_strike_sparklines()` to [backend/app/db/storage.py](file:///c:/Ritesh%20Workspace/Projects/NSE%20dashboard/backend/app/db/storage.py) querying `intraday_strike_snapshots` for 7 focus strikes (14 contracts: CE & PE).

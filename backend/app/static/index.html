@@ -58,19 +58,8 @@
     <!-- Header Mount -->
     <div id="header-mount"></div>
 
-    <!-- Main Workspace -->
+    <!-- Main Workspace (Strict 100vh Full-Screen Command Center) -->
     <main class="main-content">
-      <section class="workspace-toolbar" aria-label="Workspace controls">
-        <div><div class="workspace-eyebrow">MYBULLANDBEAR / NSE F&O</div><h1 id="workspace-title">Market decision board</h1><p class="workspace-subtitle" id="workspace-subtitle">Index alignment, option positioning and market context</p></div>
-        <div class="workspace-tools"><span class="paper-badge">PAPER ONLY</span><a href="/research" class="strategy-desk-link">Research &amp; charts</a><button id="toggle-replay" type="button" aria-expanded="false" aria-controls="master-replay-mount">Replay controls</button><button id="terminal-lock" type="button">Lock terminal</button></div>
-      </section>
-      <div class="connection-line" role="status" aria-live="polite"><span id="network-state">Connecting…</span><span id="data-freshness">Awaiting market snapshot</span><span class="live-disabled">Live order routing disabled</span></div>
-      <!-- Master Multi-Index Alignment Matrix & Real-Time Telemetry Bar -->
-      <div id="directional-weightage-mount"></div>
-
-      <!-- Master Whole-Day Replay & Time-Travel Controller -->
-      <div id="master-replay-mount"></div>
-
       <!-- Desktop Navigation Tabs (The 5 Core Modules) -->
       <nav class="terminal-tabs desktop-tabs" aria-label="Terminal Navigation">
         <button class="tab-btn active" data-tab="dashboard">
@@ -94,6 +83,34 @@
           <span>OPTION CHAIN MATRIX</span>
         </button>
       </nav>
+
+      <!-- Institutional Micro-Telemetry & Controls Strip -->
+      <section class="workspace-toolbar micro-toolbar" aria-label="Workspace controls">
+        <div class="micro-left">
+          <span class="micro-eyebrow">NSE F&amp;O</span>
+          <span class="micro-sep">/</span>
+          <h1 id="workspace-title" class="micro-title">Market decision board</h1>
+          <span id="workspace-subtitle" class="micro-subtitle">Index alignment &amp; positioning</span>
+        </div>
+        <div class="connection-line micro-connection" role="status" aria-live="polite">
+          <span id="network-state">Connected</span>
+          <span class="dot-sep">•</span>
+          <span id="data-freshness">Live snapshot</span>
+          <span class="live-disabled">Paper routing</span>
+        </div>
+        <div class="workspace-tools micro-tools">
+          <span class="paper-badge">PAPER ONLY</span>
+          <a href="/research" class="strategy-desk-link" title="Quantitative Research & Strategy Charts">Research</a>
+          <button id="toggle-replay" type="button" aria-expanded="false" aria-controls="master-replay-mount">Replay</button>
+          <button id="terminal-lock" type="button" title="Lock Terminal">Lock</button>
+        </div>
+      </section>
+
+      <!-- Master Multi-Index Alignment Matrix & Real-Time Telemetry Bar -->
+      <div id="directional-weightage-mount"></div>
+
+      <!-- Master Whole-Day Replay & Time-Travel Controller -->
+      <div id="master-replay-mount"></div>
 
       <!-- Active View Mount Point -->
       <div id="content-mount" tabindex="-1"></div>
