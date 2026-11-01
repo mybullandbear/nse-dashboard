@@ -1,3 +1,5 @@
+> **New dashboard:** all five indices, OI, closed-five-minute signals, action context and six sparklines per row. [Testing instructions and field definitions](docs/DECISION_BOARD.md). [Full historical charts](docs/RESEARCH_WORKBENCH.md). Live orders remain disabled.
+
 > Development status: paper-only review branches; no production deployment. The new **Strategy desk** is at `/strategy`. Read [strategy/risk rules and limitations](docs/STRATEGY_DESK.md) and [signal-quality repairs](docs/SIGNAL_RESEARCH.md). New strategies are forward-observation previews, not validated profitable models.
 
 # NSE Options Terminal & Visual Command Center V4 Pro

@@ -33,6 +33,7 @@ from app.publishing.snapshot_api import router as snapshot_router
 from app.api.matrix_dashboard_api import router as matrix_dashboard_router
 from app.api.strategy_workspace import router as strategy_workspace_router
 from app.api.research import router as research_router
+from app.api.decision_board import router as decision_board_router
 
 from app.services.option_chain import parse_option_chain
 from app.services.oi_analyzer import oi_analyzer
@@ -205,6 +206,7 @@ app.include_router(shonya_router)
 app.include_router(matrix_dashboard_router)
 app.include_router(strategy_workspace_router)
 app.include_router(research_router)
+app.include_router(decision_board_router)
 app.include_router(ws_router)
 app.include_router(snapshot_router)
 
