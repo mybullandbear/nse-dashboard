@@ -183,7 +183,7 @@ export async function renderDirectionalWeightageBar(container) {
 }
 
 async function _fetchAndUpdate(container) {
-  if (_isPolling) return;
+  if (store.getState().activeTab === 'dashboard' || document.hidden || _isPolling) return;
   _isPolling = true;
 
   try {

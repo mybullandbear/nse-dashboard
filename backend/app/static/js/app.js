@@ -16,6 +16,7 @@ import { renderHeader } from './components/header.js';
 import { renderTickerBar } from './components/ticker_bar.js';
 import { renderDirectionalWeightageBar } from './components/directional_weightage_bar.js';
 import { renderDashboardView } from './components/dashboard_view.js';
+import { destroyDecisionBoard } from './components/decision_board.js';
 import { renderOptionConfluence } from './components/option_confluence.js';
 import { renderShonyaTerminal } from './components/shonya_terminal.js';
 import { renderOICharts } from './components/oi_charts.js';
@@ -222,20 +223,20 @@ class TerminalApp {
         ApiClient.fetchSession().catch(() => null),
         ApiClient.fetchIndices().catch(() => null),
         ApiClient.fetchFyersStatus().catch(() => null),
-        ApiClient.fetchOIAnalytics(s1).catch(() => null),
-        ApiClient.fetchOIAnalytics(s2).catch(() => null),
-        ApiClient.fetchSignals(s1).catch(() => null),
-        ApiClient.fetchSignals(s2).catch(() => null),
-        ApiClient.fetchOptionChain(s1).catch(() => null),
-        ApiClient.fetchOptionChain(s2).catch(() => null)
+        (state.activeTab === 'dashboard' ? Promise.resolve(null) : ApiClient.fetchOIAnalytics(s1).catch(() => null)),
+        (state.activeTab === 'dashboard' ? Promise.resolve(null) : ApiClient.fetchOIAnalytics(s2).catch(() => null)),
+        (state.activeTab === 'dashboard' ? Promise.resolve(null) : ApiClient.fetchSignals(s1).catch(() => null)),
+        (state.activeTab === 'dashboard' ? Promise.resolve(null) : ApiClient.fetchSignals(s2).catch(() => null)),
+        (state.activeTab === 'dashboard' ? Promise.resolve(null) : ApiClient.fetchOptionChain(s1).catch(() => null)),
+        (state.activeTab === 'dashboard' ? Promise.resolve(null) : ApiClient.fetchOptionChain(s2).catch(() => null))
       ]);
 
       store.setState({
         session:       session || store.getState().session,
         indices:       indices?.indices || [],
-        vix:           indices?.vix || { current: 13.5, change: 0.0 },
-        breadth:       indices?.breadth || { advances: 30, declines: 20 },
-        dataSource:    indices?.source || oiData1?.source || 'REAL_MARKET',
+        vix:           indices?.vix || null,
+        breadth:       indices?.breadth || null,
+        dataSource:    indices?.source || oiData1?.source || 'UNAVAILABLE',
         fyersStatus:   fyersStatus || { is_configured: false, has_token: false },
         oiData1:       oiData1 || null,
         oiData2:       oiData2 || null,
@@ -351,6 +352,7 @@ class TerminalApp {
   }
 
   switchTab(tab) {
+    if (tab !== 'dashboard') destroyDecisionBoard();
     if (_prevTab !== tab) {
       if (this.contentMount) this.contentMount.innerHTML = '';
       _contentMounted = false;
@@ -418,8 +420,11 @@ class TerminalApp {
       }
     }
 
+    document.body.classList.toggle('decision-dashboard', state.activeTab === 'dashboard');
+    if(this.weightageMount)this.weightageMount.hidden=state.activeTab === 'dashboard';
+
     // ── 2.5. Directional Weightage Bar (Mount once) ──────────────────────────
-    if (this.weightageMount && !this._weightageMounted) {
+    if (state.activeTab !== 'dashboard' && this.weightageMount && !this._weightageMounted) {
       this._weightageMounted = true;
       renderDirectionalWeightageBar(this.weightageMount);
     }
