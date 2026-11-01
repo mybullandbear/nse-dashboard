@@ -34,3 +34,13 @@ def test_quality_gate_blocks_persistent_unchanged_inputs():
     bars=r.minute_bars(data)
     assert not bars.quality_ok.iloc[-1]
     assert r.directions(bars,r.Candidate('quality'))[-1]==0
+
+
+def test_quote_reversion_is_not_mistaken_for_continuous_freeze():
+    rows=[]
+    for i,t in enumerate(pd.date_range('2026-10-05T09:44:10+05:30',periods=27,freq='min')):
+        rows.append({'symbol':'NIFTY','trade_date':'2026-10-05','timestamp':t.isoformat(),'strike':25000.,'option_type':'CE','ltp':100+i%2,'oi':20000,'volume':1000})
+    bars=pd.DataFrame([{'symbol':'NIFTY','trade_date':'2026-10-05','decision_time':pd.Timestamp('2026-10-05T09:45:00+05:30'),'spot':25000.,'ema_fast':2.,'ema_slow':1.,'momentum':1.,'oi_flow':1.,'warm':True,'quality_ok':True}])
+    trades,rejected=r.replay(bars,r.Quotes(pd.DataFrame(rows)),r.Candidate('test'))
+    assert len(trades)==1 and rejected['gap_or_missing_exit']==0
+    assert trades[0]['reason']=='TIME'

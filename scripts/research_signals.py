@@ -103,6 +103,8 @@ def replay(bars,quotes,candidate,slippage=.005,fee=85.):
             future=seq[seq.ts>row.decision_time]
             if future.empty:rejections['missing_quote']+=1;continue
             entry=future.iloc[0]
+            if not np.isfinite(entry.ltp) or entry.ltp<=0:
+                rejections['missing_quote']+=1;continue
             if (entry.ts-row.decision_time).total_seconds()>90:rejections['missing_quote']+=1;continue
             qty=LOTS[symbol];buy=entry.ltp*(1+slippage)
             if buy*qty>30000:rejections['capital']+=1;continue
@@ -110,11 +112,16 @@ def replay(bars,quotes,candidate,slippage=.005,fee=85.):
             expiry=entry.ts.normalize()+pd.Timedelta(hours=15,minutes=15)
             limit=min(limit,expiry)
             exit_row=None;reason='TIME';last=entry.ts
+            economic=(entry.ltp,entry.volume,entry.oi);quote_changed_at=entry.ts
             for q in future.iloc[1:].itertuples():
                 if (q.ts-last).total_seconds()>90:reason='GAP';break
                 last=q.ts
                 # A changing timestamp is not evidence that an unchanged contract traded.
-                if candidate.quality_gate and (q.ltp==entry.ltp and q.volume==entry.volume and q.oi==entry.oi) and (q.ts-entry.ts).total_seconds()>=180:
+                if not np.isfinite(q.ltp) or q.ltp<=0:reason='GAP';break
+                observed=(q.ltp,q.volume,q.oi)
+                if observed!=economic:
+                    economic=observed;quote_changed_at=q.ts
+                if candidate.quality_gate and (q.ts-quote_changed_at).total_seconds()>=180:
                     reason='FROZEN';break
                 if q.ltp<=entry.ltp*.75:exit_row=q;reason='STOP';break
                 if q.ltp>=entry.ltp*1.40:exit_row=q;reason='TARGET';break
