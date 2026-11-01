@@ -3,7 +3,12 @@ Deterministic Multi-Factor Confluence & Signal Generation Engine
 Combines Positioning, Price Confirmation, Defense Walls, and Straddle Decay
 to generate institutional option seller trading recommendations.
 """
+import logging
 from typing import Dict, Any, List
+from app.core.config import get_settings
+from app.services.data_quality import UNSAFE_SOURCES
+
+logger = logging.getLogger(__name__)
 from app.services.option_chain import ParsedOptionChain
 from app.services.trade_engine import trade_engine
 
@@ -15,6 +20,9 @@ class SignalEngine:
         if not chain:
             return self._default_neutral_signal()
 
+        if chain.source in UNSAFE_SOURCES:
+            return {**self._default_neutral_signal(), "symbol": chain.symbol, "operational_state": "DATA UNAVAILABLE", "data_quality": chain.data_quality}
+
         sym = chain.symbol.upper()
         spot = chain.spot_price
         atm = chain.atm_strike
@@ -25,7 +33,7 @@ class SignalEngine:
         pressure = oi_analytics.get("pressure", {})
         straddle = oi_analytics.get("straddle", {})
 
-        step = 100 if "BANK" in sym else (25 if "MID" in sym else 50)
+        step = get_settings().STRIKE_STEPS.get(sym, 50)
 
         # 1. Positioning Score (-100 to +100)
         # PCR > 1.2 is bullish, PCR < 0.8 is bearish
@@ -78,7 +86,7 @@ class SignalEngine:
                 wall_score = 0.0
 
         # 4. Straddle Decay Score (0 to 100)
-        decay_pct = straddle.get("decay_pct", 0.0)
+        decay_pct = straddle.get("decay_pct") or 0.0
         decay_score = min(100.0, max(0.0, 50.0 + decay_pct * 4.0))
 
         # Normalized weights:
@@ -129,7 +137,10 @@ class SignalEngine:
         top_rec = trade_eval.get("top_recommendation", {})
         top_strategy = top_rec.get("strategy", {})
 
-        return {
+        decision = {
+            "model_version": "confluence-v2-observed-decay",
+            "confidence_kind": "HEURISTIC_STRENGTH_NOT_CALIBRATED_PROBABILITY",
+            "data_quality": chain.data_quality,
             "symbol": sym,
             "direction": direction,
             "bias": direction,
@@ -170,9 +181,16 @@ class SignalEngine:
             "strategy": top_strategy or self._generate_seller_strategy(sym, direction, spot, atm, sup_strike, res_strike)
         }
 
+        try:
+            from app.db.storage import snapshot_storage
+            snapshot_storage.save_signal_decision(decision, {"source":chain.source,"spot":spot,"atm":atm,"pcr":pcr,"spot_change":spot_change,"spot_pchange":spot_pchange,"walls":walls,"pressure":pressure,"straddle":straddle,"snapshot_timestamp":chain.timestamp})
+        except Exception:
+            logger.exception("Decision audit persistence failed for %s", sym)
+        return decision
+
     def _generate_seller_strategy(self, symbol: str, direction: str, spot: float, atm: float, sup: float, res: float) -> Dict[str, Any]:
         """Formulates institutional high-probability spread recommendations for option sellers."""
-        step = 50 if "BANK" not in symbol else 100
+        step = get_settings().STRIKE_STEPS.get(symbol, 50)
         
         if direction == "BULLISH":
             sell_strike = atm - step

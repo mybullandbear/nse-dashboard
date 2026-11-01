@@ -4,6 +4,7 @@ Computes full-day intraday timelines (09:15 - 15:40 IST), strike-wise comparativ
 support/resistance defense walls, and ATM straddle decay metrics.
 """
 import math
+import json
 import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
@@ -22,6 +23,7 @@ class OIAnalyzer:
         # In-memory history for intraday snapshots per symbol
         self._history: Dict[str, List[Dict[str, Any]]] = {}
         self._current_trade_date: str = ""
+        self._straddle_refs = {}
 
     def _check_and_reset_day(self):
         """Ensures that when a new calendar day starts, all yesterday snapshots are flushed."""
@@ -30,6 +32,7 @@ class OIAnalyzer:
             logger.info(f"OIAnalyzer: Trading day transition to '{today}'. Resetting in-memory history.")
             self._current_trade_date = today
             self._history.clear()
+            self._straddle_refs.clear()
 
     def _ensure_morning_history(self, sym: str, chain: ParsedOptionChain):
         """
@@ -58,9 +61,9 @@ class OIAnalyzer:
         else:
             self._history[sym] = []
 
-    def record_snapshot(self, chain: ParsedOptionChain):
+    def record_snapshot(self, chain: ParsedOptionChain, decision=None):
         """Records a live point in time for the intraday timeline strictly during 09:15 - 15:40."""
-        if not chain:
+        if not chain or chain.source in {"FROZEN", "STALE_CACHE", "MARKET_CLOSED", "SIMULATOR", "UNAVAILABLE"}:
             return
 
         self._check_and_reset_day()
@@ -77,6 +80,7 @@ class OIAnalyzer:
         # Anchored strike range around stable base level to prevent sliding window boundary pop-in/pop-out
         settings = get_settings()
         step = settings.STRIKE_STEPS.get(sym, 50)
+        atm = chain.atm_strike
         base_spot = getattr(self, f"_base_spot_{sym}", None)
         if not base_spot or abs(chain.spot_price - base_spot) > (step * 8):
             base_spot = round(chain.spot_price / (step * 4)) * (step * 4)
@@ -122,7 +126,10 @@ class OIAnalyzer:
                 pe_oi=pe_oi,
                 ce_oi_chg=ce_chg,
                 pe_oi_chg=pe_chg,
-                pcr=round(pe_oi / max(1, ce_oi), 2)
+                pcr=round(pe_oi / max(1, ce_oi), 2),
+                confluence=decision.get("confluence_score") if decision else None,
+                ce_vol=sum(row.CE.totalTradedVolume for row in atm_strikes),
+                pe_vol=sum(row.PE.totalTradedVolume for row in atm_strikes)
             )
 
             # Persist strike snapshots for ATM +- 10 strikes for Buildup Lab playback
@@ -140,7 +147,13 @@ class OIAnalyzer:
                     "oi_chg": s.CE.changeinOpenInterest,
                     "oi_pchange": round(c_oi_pchg, 2),
                     "volume": s.CE.totalTradedVolume,
-                    "is_atm": (s.strikePrice == atm)
+                    "is_atm": (s.strikePrice == atm),
+                    "expiry_date": s.CE.expiryDate or None,
+                    "contract_symbol": s.CE.contract_symbol,
+                    "bid": s.CE.bidprice or None,
+                    "ask": s.CE.askPrice or None,
+                    "source": chain.source,
+                    "quality_json": json.dumps(chain.data_quality)
                 })
                 p_prev_oi = max(0, s.PE.openInterest - s.PE.changeinOpenInterest)
                 p_oi_pchg = (s.PE.changeinOpenInterest / p_prev_oi * 100.0) if p_prev_oi > 0 else (100.0 if s.PE.openInterest > 0 and s.PE.changeinOpenInterest > 0 else 0.0)
@@ -153,13 +166,19 @@ class OIAnalyzer:
                     "oi_chg": s.PE.changeinOpenInterest,
                     "oi_pchange": round(p_oi_pchg, 2),
                     "volume": s.PE.totalTradedVolume,
-                    "is_atm": (s.strikePrice == atm)
+                    "is_atm": (s.strikePrice == atm),
+                    "expiry_date": s.PE.expiryDate or None,
+                    "contract_symbol": s.PE.contract_symbol,
+                    "bid": s.PE.bidprice or None,
+                    "ask": s.PE.askPrice or None,
+                    "source": chain.source,
+                    "quality_json": json.dumps(chain.data_quality)
                 })
             snapshot_storage.save_strike_snapshots(sym, s_data)
         except Exception:
-            pass
+            logger.exception("Snapshot/strike persistence failed for %s", sym)
 
-    def analyze(self, chain: ParsedOptionChain) -> Dict[str, Any]:
+    def analyze(self, chain: ParsedOptionChain, record: bool = True) -> Dict[str, Any]:
         """Generates the complete Call vs Put OI analytics payload."""
         if not chain:
             return {}
@@ -172,7 +191,8 @@ class OIAnalyzer:
         spot = chain.spot_price
 
         # Record snapshot (loads real SQLite history if not in memory)
-        self.record_snapshot(chain)
+        if record:
+            self.record_snapshot(chain)
 
         # 1. Timeline Data (Pure Real Market Data Only - Strictly Today between 09:15 and 15:40)
         today = self._current_trade_date
@@ -254,18 +274,22 @@ class OIAnalyzer:
 
         # 4. ATM Straddle Decay & Combined Premium
         atm_row = next((s for s in chain.strikes if s.strikePrice == atm), None)
-        if atm_row:
-            combined_ltp = round(atm_row.CE.lastPrice + atm_row.PE.lastPrice, 2)
-            open_est = round(combined_ltp * 1.10, 2)
-            decay_pts = round(open_est - combined_ltp, 2)
-            decay_pct = round((decay_pts / max(1.0, open_est)) * 100, 1)
-            vwap = round(open_est * 0.95, 2)
-        else:
-            combined_ltp = 0.0
-            open_est = 0.0
-            decay_pts = 0.0
-            decay_pct = 0.0
-            vwap = 0.0
+        combined_ltp = round(atm_row.CE.lastPrice + atm_row.PE.lastPrice, 2) if atm_row else 0.0
+        now = get_current_ist()
+        ref_key = (sym, chain.expiry)
+        reference = self._straddle_refs.get(ref_key)
+        # Only an actually observed opening-window quote can seed the reference.
+        # Never fabricate an opening premium or compare changing ATM contracts.
+        if reference is None and atm_row and "09:15" <= now.strftime("%H:%M") <= "09:20" and chain.source not in {"FROZEN", "STALE_CACHE", "MARKET_CLOSED", "SIMULATOR", "UNAVAILABLE"} and combined_ltp > 0:
+            reference = {"strike": atm, "premium": combined_ltp, "timestamp": now.isoformat()}
+            self._straddle_refs[ref_key] = reference
+        ref_row = next((row for row in chain.strikes if reference and row.strikePrice == reference["strike"]), None)
+        reference_valid = bool(reference and ref_row and chain.source not in {"FROZEN", "STALE_CACHE", "MARKET_CLOSED", "SIMULATOR", "UNAVAILABLE"})
+        open_est = reference["premium"] if reference_valid else None
+        reference_current = round(ref_row.CE.lastPrice + ref_row.PE.lastPrice, 2) if reference_valid else None
+        decay_pts = round(open_est - reference_current, 2) if reference_valid else None
+        decay_pct = round(decay_pts / open_est * 100, 1) if reference_valid else None
+        vwap = None  # Quote snapshots do not establish a traded straddle VWAP.
 
         return {
             "symbol": sym,
@@ -293,10 +317,15 @@ class OIAnalyzer:
                 "atm_strike": atm,
                 "combined_premium": combined_ltp,
                 "estimated_open": open_est,
+                "decay_kind": "FIXED_STRIKE_PREMIUM_CHANGE_NOT_PURE_THETA",
+                "reference_kind": "OBSERVED_OPENING_QUOTE" if reference_valid else "UNAVAILABLE",
+                "reference_strike": reference["strike"] if reference_valid else None,
+                "reference_timestamp": reference["timestamp"] if reference_valid else None,
+                "reference_current_premium": reference_current,
                 "decay_pts": decay_pts,
                 "decay_pct": decay_pct,
                 "straddle_vwap": vwap,
-                "status": "FAST_DECAY" if decay_pct > 8 else ("MODERATE_DECAY" if decay_pct > 3 else "STABLE")
+                "status": "UNAVAILABLE" if decay_pct is None else ("FAST_DECAY" if decay_pct > 8 else ("MODERATE_DECAY" if decay_pct > 3 else "STABLE"))
             },
             "timeline": timeline,
             "strike_comparison": strike_comparison

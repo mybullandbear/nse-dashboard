@@ -65,9 +65,13 @@ async def background_market_poller():
                         raw_chain, source = await fetch_live_chain_data(sym)
                         if raw_chain:
                             parsed = parse_option_chain(raw_chain, sym)
-                            if parsed and source not in {"STALE_CACHE", "MARKET_CLOSED", "SIMULATOR"}:
+                            if parsed:
+                                source = parsed.source
+                            if parsed and source not in {"STALE_CACHE", "MARKET_CLOSED", "SIMULATOR", "FROZEN"}:
                                 parsed.source = source
-                                oi_analyzer.record_snapshot(parsed)
+                                oi_data = oi_analyzer.analyze(parsed, record=False)
+                                decision = signal_engine.evaluate(parsed, oi_data)
+                                oi_analyzer.record_snapshot(parsed, decision)
                                 try:
                                     option_candle_service.record_chain_ticks(parsed)
                                 except Exception as e_c:

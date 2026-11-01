@@ -31,7 +31,7 @@ window.addEventListener('terminal:data-status', ({detail}) => {
   if (detail.error) { label.textContent = 'Market data unavailable'; label.dataset.state = 'error'; receivedAt = 0; return; }
   if (detail.source) {
     label.textContent = detail.source.replaceAll('_',' ') + (detail.age != null ? ` · ${Math.round(detail.age)}s old` : '');
-    label.dataset.state = /STALE|CLOSED|UNAVAILABLE|SIMULATOR/.test(detail.source) ? 'stale' : 'ok';
+    label.dataset.state = /STALE|CLOSED|UNAVAILABLE|SIMULATOR|FROZEN/.test(detail.source) ? 'stale' : 'ok';
     receivedAt = Date.now();
   }
 });

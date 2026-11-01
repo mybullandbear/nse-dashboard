@@ -166,13 +166,6 @@ async def get_indices():
     if _indices_cache.get("indices"):
         return _indices_cache
 
-    # Fallback to simulator indices (if completely uninitialized)
-    try:
-        from app.services.simulator import market_simulator
-        return market_simulator.get_indices()
-    except Exception as e:
-        logger.warning(f"Simulator indices fallback failed: {e}")
-
     return {
         "source": "UNAVAILABLE",
         "indices": [],
@@ -188,14 +181,14 @@ async def get_option_chain_endpoint(symbol: str = "NIFTY"):
     raw_chain, source = await fetch_live_chain_data(symbol)
     parsed = parse_option_chain(raw_chain, symbol)
     if parsed:
-        parsed.source = source
+        source = parsed.source
     if not parsed:
         raise HTTPException(status_code=503, detail=f"Failed to load option chain for {symbol}")
 
     # Record live ticks into 5-minute candles
     try:
         from app.services.option_candle_service import option_candle_service
-        if source not in {"STALE_CACHE", "MARKET_CLOSED", "SIMULATOR"}:
+        if source not in {"STALE_CACHE", "MARKET_CLOSED", "SIMULATOR", "FROZEN"}:
             option_candle_service.record_chain_ticks(parsed)
     except Exception as e:
         logger.debug(f"Tick record error in option-chain endpoint: {e}")
