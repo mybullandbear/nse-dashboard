@@ -751,7 +751,7 @@ class SnapshotStorage:
         """Persist the decision at its actual evaluation time; never rewrite earlier snapshots."""
         import json
         now = get_current_ist()
-        if now.weekday() >= 5 or not "09:15" <= now.strftime("%H:%M") <= "15:30":
+        if now.weekday() >= 5 or not "09:15" <= now.strftime("%H:%M") < "15:40":
             return
         if inputs.get("source") in {"FROZEN", "STALE_CACHE", "MARKET_CLOSED", "SIMULATOR", "UNAVAILABLE"}:
             return
@@ -772,6 +772,28 @@ class SnapshotStorage:
             conn.execute("INSERT INTO decision_audit(symbol,timestamp,model_version,data_source,decision_json,inputs_json) VALUES(?,?,?,?,?,?)",(decision["symbol"],now.isoformat(),version,inputs.get("source","UNKNOWN"),json.dumps(decision,allow_nan=False),json.dumps(inputs,allow_nan=False)))
             conn.execute("INSERT INTO signal_history(symbol,trade_date,timestamp,direction,confluence,confidence,state,strategy,spot) VALUES(?,?,?,?,?,?,?,?,?)",(decision["symbol"],now.strftime("%Y-%m-%d"),now.isoformat(),decision["direction"],decision["confluence_score"],decision["confidence_pct"],decision["operational_state"],str(decision.get("strategy",{}).get("name","")),decision["spot_price"]))
 
+    def get_strategy_bars(self, symbol: str, trade_date: str, as_of: str):
+        """Deterministic one-minute OHLC using only observations before as_of."""
+        with self._get_connection() as conn:
+            rows = conn.execute("""WITH ranked AS (
+                SELECT *, ROW_NUMBER() OVER(PARTITION BY time_str ORDER BY timestamp,id) first_row,
+                          ROW_NUMBER() OVER(PARTITION BY time_str ORDER BY timestamp DESC,id DESC) last_row
+                FROM intraday_snapshots
+                WHERE symbol=? AND trade_date=? AND time_str>='09:15'
+                  AND time_str<'15:40' AND timestamp<? AND time_str < substr(?,12,5)
+            ) SELECT symbol,trade_date,
+                     trade_date||'T'||time_str||':00+05:30' minute,
+                     MAX(CASE WHEN first_row=1 THEN spot END) open,
+                     MAX(spot) high,MIN(spot) low,
+                     MAX(CASE WHEN last_row=1 THEN spot END) spot,
+                     MAX(CASE WHEN last_row=1 THEN ce_oi END) ce_oi,
+                     MAX(CASE WHEN last_row=1 THEN pe_oi END) pe_oi,
+                     MAX(CASE WHEN last_row=1 THEN pcr END) pcr,
+                     MAX(timestamp) last_observation,COUNT(*) samples
+              FROM ranked GROUP BY time_str ORDER BY time_str""",
+              (symbol.upper(),trade_date,as_of,as_of)).fetchall()
+            return [dict(row) for row in rows]
+
     def cleanup_old_data(self, days_to_keep: int = 30):
         """Purges intraday snapshots, strike snapshots, and signal history older than 30 days while preserving recent sessions."""
         try:
@@ -782,6 +804,8 @@ class SnapshotStorage:
                 cursor.execute("DELETE FROM signal_history WHERE trade_date < ?", (cutoff,))
                 if cursor.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='decision_audit'").fetchone():
                     cursor.execute("DELETE FROM decision_audit WHERE timestamp < ?", (cutoff,))
+                if cursor.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='strategy_shadow_decisions'").fetchone():
+                    cursor.execute("DELETE FROM strategy_shadow_decisions WHERE observation_minute < ?", (cutoff,))
                 cursor.execute("DELETE FROM intraday_strike_snapshots WHERE trade_date < ?", (cutoff,))
                 conn.commit()
                 logger.info(f"30-Day Retention Policy: Purged DB snapshots older than {cutoff}")

@@ -84,10 +84,12 @@ def test_paper_risk_and_restart(tmp_path):
     with pytest.raises(ValueError): bot.set_mode('LIVE')
     for args in [('INVALID',25000,'CE',1,100),('NIFTY',25000,'BAD',1,100),('NIFTY',25000,'CE',0,100),('NIFTY',25000,'CE',1,float('nan'))]:
         assert not bot.place_trade(*args)['success']
-    with patch.object(fyers_service,'resolve_option_symbol',return_value=None):
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    with patch.object(fyers_service,'resolve_option_symbol',return_value=None), patch('app.services.shonya_bot.is_market_open',return_value=True), patch('app.services.shonya_bot.get_current_ist',return_value=datetime(2026,11,2,10,tzinfo=ZoneInfo('Asia/Kolkata'))):
         assert not bot.place_trade('NIFTY',25000,'CE')['success']
         assert not bot.place_trade('NIFTY',25000,'CE',entry_price=100,stop_loss=110)['success']
-        assert bot.place_trade('NIFTY',25000,'CE',entry_price=100)['success']
+        assert bot.place_trade('NIFTY',25000,'CE',entry_price=100,stop_loss=90)['success']
         assert not bot.place_trade('NIFTY',25000,'CE',entry_price=100)['success']
     restarted=ShonyaBot(str(tmp_path/'paper.db'))
     assert len(restarted.get_open_trades())==1

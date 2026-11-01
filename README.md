@@ -1,3 +1,5 @@
+> Development status: paper-only review branches; no production deployment. The new **Strategy desk** is at `/strategy`. Read [strategy/risk rules and limitations](docs/STRATEGY_DESK.md) and [signal-quality repairs](docs/SIGNAL_RESEARCH.md). New strategies are forward-observation previews, not validated profitable models.
+
 # NSE Options Terminal & Visual Command Center V4 Pro
 
 An institutional-grade, real-time decision support terminal and signal generation platform for NSE index option sellers. Features live Call vs Put Open Interest analytics, multi-factor confluence scoring, strike-level defense walls, and smart money order flow tracking.
