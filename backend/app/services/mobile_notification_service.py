@@ -19,8 +19,8 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8392685097:AAFnCGdGMcyjOlMScfqKLS6um9kY2wO7arA")
-DEFAULT_TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "562973750")
+DEFAULT_TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+DEFAULT_TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 DEFAULT_NTFY_TOPIC = os.getenv("NTFY_TOPIC", "mybull_radar_alerts_2026")
 DASHBOARD_URL = "http://137.23.42.11:8000"
 

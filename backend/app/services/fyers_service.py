@@ -337,6 +337,7 @@ class FyersService:
                 }
 
             contract = {
+                "contract_symbol": item.get("symbol"),
                 "strikePrice": strike,
                 "expiryDate": expiry_str,
                 "lastPrice": float(item.get("ltp", 0.0)),

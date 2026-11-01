@@ -105,7 +105,7 @@ class TradeRecommendationEngine:
 
         sup_strike = walls.get("support_strike", atm - (2 * step))
         res_strike = walls.get("resistance_strike", atm + (2 * step))
-        decay_pct = straddle.get("decay_pct", 0.0)
+        decay_pct = straddle.get("decay_pct") or 0.0
 
         # ---------------------------------------------------------
         # 1. Market Regime & Option Buyer Priority Classification

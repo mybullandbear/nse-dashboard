@@ -98,12 +98,16 @@ class SnapshotStorage:
                         is_atm INTEGER DEFAULT 0
                     )
                 """)
+                existing_columns = {row[1] for row in cursor.execute("PRAGMA table_info(intraday_strike_snapshots)")}
+                for column, sql_type in {"expiry_date":"TEXT","contract_symbol":"TEXT","bid":"REAL","ask":"REAL","source":"TEXT","quality_json":"TEXT"}.items():
+                    if column not in existing_columns:
+                        cursor.execute(f"ALTER TABLE intraday_strike_snapshots ADD COLUMN {column} {sql_type}")
                 cursor.execute("CREATE INDEX IF NOT EXISTS idx_strike_snap ON intraday_strike_snapshots(symbol, trade_date, time_str)")
                 conn.commit()
         except Exception as e:
             logger.error(f"Error initializing SQLite DB: {e}")
 
-    def save_snapshot(self, symbol: str, spot: float, ce_oi: int, pe_oi: int, ce_oi_chg: int, pe_oi_chg: int, pcr: float, confluence: float = 50.0, ce_vol: int = 0, pe_vol: int = 0):
+    def save_snapshot(self, symbol: str, spot: float, ce_oi: int, pe_oi: int, ce_oi_chg: int, pe_oi_chg: int, pcr: float, confluence: Optional[float] = None, ce_vol: int = 0, pe_vol: int = 0):
         try:
             now = get_current_ist()
             # Strictly enforce market trading days (Mon-Fri) and hours (09:15 to 15:40 IST)
@@ -536,15 +540,17 @@ class SnapshotStorage:
                         int(s.get("oi_chg", 0)),
                         float(s.get("oi_pchange", 0.0)),
                         int(s.get("volume", 0)),
-                        1 if s.get("is_atm") else 0
+                        1 if s.get("is_atm") else 0,
+                        s.get("expiry_date"),s.get("contract_symbol"),s.get("bid"),s.get("ask"),s.get("source"),s.get("quality_json")
                     )
                     for s in strikes_data
                 ]
                 cursor.executemany("""
                     INSERT INTO intraday_strike_snapshots (
                         symbol, trade_date, timestamp, time_str, strike, option_type,
-                        ltp, price_pchange, oi, oi_chg, oi_pchange, volume, is_atm
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ltp, price_pchange, oi, oi_chg, oi_pchange, volume, is_atm,
+                        expiry_date,contract_symbol,bid,ask,source,quality_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, params)
                 conn.commit()
         except Exception as e:
@@ -741,6 +747,31 @@ class SnapshotStorage:
                 "latest": {}
             }
 
+    def save_signal_decision(self, decision: Dict[str, Any], inputs: Dict[str, Any]):
+        """Persist the decision at its actual evaluation time; never rewrite earlier snapshots."""
+        import json
+        now = get_current_ist()
+        if now.weekday() >= 5 or not "09:15" <= now.strftime("%H:%M") <= "15:30":
+            return
+        if inputs.get("source") in {"FROZEN", "STALE_CACHE", "MARKET_CLOSED", "SIMULATOR", "UNAVAILABLE"}:
+            return
+        with self._get_connection() as conn:
+            conn.execute("""CREATE TABLE IF NOT EXISTS decision_audit (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT NOT NULL,
+                timestamp TEXT NOT NULL, model_version TEXT NOT NULL,
+                data_source TEXT NOT NULL, decision_json TEXT NOT NULL,
+                inputs_json TEXT NOT NULL, UNIQUE(symbol,timestamp,model_version)
+            )""")
+            # One decision per minute: first observation wins, preserving causal timing.
+            prefix = now.isoformat()[:16]
+            version = decision.get("model_version", "unversioned")
+            conn.execute("BEGIN IMMEDIATE")
+            exists = conn.execute("SELECT 1 FROM decision_audit WHERE symbol=? AND substr(timestamp,1,16)=? AND model_version=? LIMIT 1", (decision["symbol"],prefix,version)).fetchone()
+            if exists:
+                return
+            conn.execute("INSERT INTO decision_audit(symbol,timestamp,model_version,data_source,decision_json,inputs_json) VALUES(?,?,?,?,?,?)",(decision["symbol"],now.isoformat(),version,inputs.get("source","UNKNOWN"),json.dumps(decision,allow_nan=False),json.dumps(inputs,allow_nan=False)))
+            conn.execute("INSERT INTO signal_history(symbol,trade_date,timestamp,direction,confluence,confidence,state,strategy,spot) VALUES(?,?,?,?,?,?,?,?,?)",(decision["symbol"],now.strftime("%Y-%m-%d"),now.isoformat(),decision["direction"],decision["confluence_score"],decision["confidence_pct"],decision["operational_state"],str(decision.get("strategy",{}).get("name","")),decision["spot_price"]))
+
     def cleanup_old_data(self, days_to_keep: int = 30):
         """Purges intraday snapshots, strike snapshots, and signal history older than 30 days while preserving recent sessions."""
         try:
@@ -749,6 +780,8 @@ class SnapshotStorage:
                 cursor = conn.cursor()
                 cursor.execute("DELETE FROM intraday_snapshots WHERE trade_date < ?", (cutoff,))
                 cursor.execute("DELETE FROM signal_history WHERE trade_date < ?", (cutoff,))
+                if cursor.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='decision_audit'").fetchone():
+                    cursor.execute("DELETE FROM decision_audit WHERE timestamp < ?", (cutoff,))
                 cursor.execute("DELETE FROM intraday_strike_snapshots WHERE trade_date < ?", (cutoff,))
                 conn.commit()
                 logger.info(f"30-Day Retention Policy: Purged DB snapshots older than {cutoff}")

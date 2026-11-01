@@ -649,6 +649,8 @@ class ShonyaBot:
         symbol: str,
         chain: Any
     ) -> Optional[Dict[str, Any]]:
+        if not chain or getattr(chain, "source", "UNAVAILABLE") in {"SIMULATOR", "STALE_CACHE", "MARKET_CLOSED", "FROZEN", "UNAVAILABLE"}:
+            return None
         if not self.is_active:
             return None
 

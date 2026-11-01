@@ -9,13 +9,15 @@ import threading
 from collections import OrderedDict
 import time
 from typing import Dict, Any, List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from app.services.data_quality import market_quality_gate
 from app.core.config import get_settings
 
 
 class StrikeContract(BaseModel):
     strikePrice: float
     expiryDate: str = ""
+    contract_symbol: Optional[str] = None
     lastPrice: float = 0.0
     change: float = 0.0
     pChange: float = 0.0
@@ -65,6 +67,7 @@ class ParsedOptionChain(BaseModel):
     strikes: List[StrikeRow]
     timestamp: Optional[str] = None
     source: str = "LIVE"
+    data_quality: Dict[str, Any] = Field(default_factory=dict)
     atm_2_signals: Optional[Dict[str, Any]] = None
     spot_hull: Optional[Dict[str, Any]] = None
 
@@ -79,21 +82,21 @@ def parse_option_chain(raw_chain: Dict[str, Any], symbol: str = "NIFTY") -> Opti
     try:
         digest = hashlib.sha256(json.dumps(raw_chain, sort_keys=True, separators=(",", ":")).encode()).digest()
     except (ValueError, TypeError):
-        return _parse_option_chain_uncached(raw_chain, symbol)
+        return market_quality_gate.inspect(_parse_option_chain_uncached(raw_chain, symbol))
     key = (symbol.upper(), get_settings().STRIKE_STEPS.get(symbol.upper(), 50), digest)
     with _normalized_lock:
         now = time.monotonic()
         cached = _normalized_cache.get(key)
         if cached and now - cached[0] < 5:
             _normalized_cache.move_to_end(key)
-            return ParsedOptionChain.model_validate_json(cached[1])
+            return market_quality_gate.inspect(ParsedOptionChain.model_validate_json(cached[1]))
         parsed = _parse_option_chain_uncached(raw_chain, symbol)
         if parsed:
             _normalized_cache[key] = (now, parsed.model_dump_json())
             _normalized_cache.move_to_end(key)
             while len(_normalized_cache) > 32:
                 _normalized_cache.popitem(last=False)
-            return parsed
+            return market_quality_gate.inspect(parsed)
         return None
 
 
@@ -145,6 +148,7 @@ def _parse_option_chain_uncached(raw_chain: Dict[str, Any], symbol: str = "NIFTY
             expiryDate=str(ce_raw.get("expiryDate") or pe_raw.get("expiryDate") or target_expiry),
             CE=StrikeContract(
                 strikePrice=strike,
+                contract_symbol=ce_raw.get("contract_symbol") or ce_raw.get("identifier"),
                 expiryDate=str(ce_raw.get("expiryDate") or target_expiry),
                 lastPrice=float(ce_raw.get("lastPrice") or 0.0),
                 change=float(ce_raw.get("change") or 0.0),
@@ -158,6 +162,7 @@ def _parse_option_chain_uncached(raw_chain: Dict[str, Any], symbol: str = "NIFTY
             ),
             PE=StrikeContract(
                 strikePrice=strike,
+                contract_symbol=pe_raw.get("contract_symbol") or pe_raw.get("identifier"),
                 expiryDate=str(pe_raw.get("expiryDate") or target_expiry),
                 lastPrice=float(pe_raw.get("lastPrice") or 0.0),
                 change=float(pe_raw.get("change") or 0.0),
