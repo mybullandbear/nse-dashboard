@@ -25,7 +25,7 @@ class Candidate:
     quality_gate: bool=True
 
 
-def minute_bars(frame):
+def minute_bars(frame,session_last_minute='15:29'):
     frame=frame.copy()
     frame['ts']=pd.to_datetime(frame.timestamp,format='mixed')
     frame=frame.sort_values(['symbol','ts','id'])
@@ -33,7 +33,7 @@ def minute_bars(frame):
     rows=[]
     for (symbol,date),g in frame.groupby(['symbol','trade_date'],sort=True):
         bars=g.groupby('minute').agg(spot=('spot','last'),high=('spot','max'),low=('spot','min'),ce_oi=('ce_oi','last'),pe_oi=('pe_oi','last'),pcr=('pcr','last'),last_observation=('ts','max'),samples=('spot','size')).reset_index()
-        bars=bars[bars.minute.dt.strftime('%H:%M').between('09:15','15:29')].copy()
+        bars=bars[bars.minute.dt.strftime('%H:%M').between('09:15',session_last_minute)].copy()
         bars['symbol']=symbol;bars['trade_date']=date
         bars['decision_time']=bars.minute+pd.Timedelta(minutes=1)
         bars['ema_fast']=bars.spot.ewm(span=9,adjust=False).mean()

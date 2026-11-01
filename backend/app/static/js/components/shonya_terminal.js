@@ -55,7 +55,7 @@ export async function renderShonyaTerminal(container) {
               <span>SHONYA BOT</span>
               <span id="shonya-power-badge" class="badge" style="background: #334155; color: #94a3b8; font-size: 11px; padding: 2px 8px; border-radius: 6px;">CHECKING...</span>
             </div>
-            <div style="font-size: 12px; color: #94a3b8;">MyBullAndBear AI Institutional Execution Engine & Manual Terminal</div>
+            <div style="font-size: 12px; color: #94a3b8;">Legacy OI/Hull paper engine · shared risk controls · live routing disabled</div>
           </div>
         </div>
 

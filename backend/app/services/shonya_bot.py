@@ -540,7 +540,37 @@ class ShonyaBot:
         if not (0 < sl < est_ltp < t1 <= t2):
             return {"success": False, "message": "Require stop < entry < target1 <= target2"}
 
-        trade_id = f"SHONYA_{sym}_{int(strike)}_{opt_t}_{int(time.time())}"
+        # Service-boundary controls apply to manual, AI and automated paper entries.
+        now = get_current_ist()
+        if not is_market_open(now) or now.strftime("%H:%M") >= "15:35":
+            return {"success":False,"message":"Paper entry blocked outside the session or after 15:35"}
+        config = get_settings()
+        projected_loss = (est_ltp - sl) * total_qty + est_ltp * total_qty * .01 + self.FLAT_BROKERAGE_PER_TRADE
+        if projected_loss > self.capital_ceiling * config.STRATEGY_RISK_FRACTION:
+            return {"success":False,"message":f"Planned stop plus assumed costs ₹{projected_loss:,.2f} exceeds risk budget ₹{self.capital_ceiling * config.STRATEGY_RISK_FRACTION:,.2f}"}
+        if len(self.get_open_trades()) >= 2:
+            return {"success":False,"message":"Maximum two concurrent paper positions"}
+        today = now.strftime("%Y-%m-%d")
+        history = self.get_trade_history(limit=1000)
+        daily_net = sum(float(t.get("net_pnl") or 0) for t in history if str(t.get("exit_time", ""))[:10] == today)
+        if daily_net <= -self.capital_ceiling * config.STRATEGY_DAILY_LOSS_FRACTION:
+            return {"success":False,"message":"Daily realized loss limit reached; new entries locked"}
+
+        with self._get_conn() as conn:
+            count = conn.execute("SELECT COUNT(*) FROM shonya_trades WHERE symbol=? AND substr(entry_time,1,10)=?",(sym,today)).fetchone()[0]
+            if count >= 3:
+                return {"success":False,"message":"Maximum three paper entries per symbol/day"}
+            recent = conn.execute("SELECT exit_time FROM shonya_trades WHERE symbol=? AND status='CLOSED' AND substr(exit_time,1,10)=? ORDER BY exit_time DESC LIMIT 1",(sym,today)).fetchone()
+        if recent:
+            try:
+                closed_at = datetime.fromisoformat(recent["exit_time"])
+                if closed_at.tzinfo is None:closed_at=closed_at.replace(tzinfo=now.tzinfo)
+            except (TypeError,ValueError):
+                return {"success":False,"message":"Cannot verify last exit timestamp"}
+            if (now-closed_at).total_seconds() < 600:
+                return {"success":False,"message":"Ten-minute cooldown after exit"}
+
+        trade_id = f"SHONYA_{sym}_{int(strike)}_{opt_t}_{uuid.uuid4().hex}"
         now_dt = get_current_ist().strftime("%Y-%m-%d %H:%M:%S")
 
         broker_order_id = None
@@ -1123,6 +1153,13 @@ class ShonyaBot:
             t1 = float(target1) if target1 is not None and target1 > 0 else float(row["target1"])
             t2 = float(target2) if target2 is not None and target2 > 0 else float(row["target2"])
             sl = float(stop_loss) if stop_loss is not None and stop_loss > 0 else float(row["stop_loss"])
+
+            if any(v is not None and (not math.isfinite(v) or v <= 0) for v in [target1,target2,stop_loss]):
+                return {"success":False,"message":"Targets and stop must be finite and positive"}
+            if sl < float(row["stop_loss"]):
+                return {"success":False,"message":"Stop widening is disabled; risk can only be tightened"}
+            if not float(row["entry_price"]) < t1 <= t2 or sl >= float(row["current_price"]):
+                return {"success":False,"message":"Invalid stop/target ordering at current price"}
 
             c.execute("""
                 UPDATE shonya_trades

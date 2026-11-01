@@ -31,12 +31,14 @@ from app.api.shonya_api import router as shonya_router
 from app.api.websocket import router as ws_router, ws_manager
 from app.publishing.snapshot_api import router as snapshot_router
 from app.api.matrix_dashboard_api import router as matrix_dashboard_router
+from app.api.strategy_workspace import router as strategy_workspace_router
 
 from app.services.option_chain import parse_option_chain
 from app.services.oi_analyzer import oi_analyzer
 from app.services.signal_engine import signal_engine
 from app.services.tracker_bot import tracker_bot
 from app.services.shonya_bot import shonya_bot
+from app.services.strategy_shadow import shadow_recorder
 from app.services.option_candle_service import option_candle_service
 from app.db.storage import snapshot_storage
 
@@ -84,6 +86,11 @@ async def background_market_poller():
                                     shonya_bot.update_positions_tick(chain_map={sym: parsed})
                                 except Exception as e_shonya:
                                     logger.debug(f"ShonyaBot tick error: {e_shonya}")
+                            if parsed:
+                                try:
+                                    await asyncio.to_thread(shadow_recorder.observe, parsed)
+                                except Exception:
+                                    logger.exception("Forward strategy observation failed for %s", sym)
                     except Exception as e_sym:
                         logger.debug(f"Poller error for {sym}: {e_sym}")
                     await asyncio.sleep(1.5)  # Stagger queries to respect broker rate limits
@@ -195,6 +202,7 @@ app.include_router(confluence_router)
 app.include_router(tv_router)
 app.include_router(shonya_router)
 app.include_router(matrix_dashboard_router)
+app.include_router(strategy_workspace_router)
 app.include_router(ws_router)
 app.include_router(snapshot_router)
 
@@ -230,6 +238,10 @@ async def serve_matrix_dashboard():
             }
         )
     return JSONResponse(status_code=404, content={"detail": "Matrix Dashboard not found"})
+
+@app.get("/strategy")
+async def serve_strategy_desk():
+    return FileResponse(os.path.join(static_dir, "strategy_workspace.html"), headers={"Cache-Control":"no-store"})
 
 @app.get("/architecture")
 async def serve_architecture_graph():

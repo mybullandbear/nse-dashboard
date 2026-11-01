@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: List[str] = []
     TRADINGVIEW_WEBHOOK_SECRET: str = ""
 
+    EXCHANGE_HOLIDAYS: List[str] = []
+    HOLIDAY_CALENDAR_VERIFIED: bool = False
+    STRATEGY_RISK_FRACTION: float = Field(0.01, gt=0, le=0.02)
+    STRATEGY_DAILY_LOSS_FRACTION: float = Field(0.02, gt=0, le=0.05)
+
     # Fyers Prime Configuration
     FYERS_TIER: str = "PRIME"  # "PRIME" removes 50 req/min limit, allows 200 req/min & 100k daily calls
     FYERS_PRIME_RATE_LIMIT_PER_MIN: int = 200
