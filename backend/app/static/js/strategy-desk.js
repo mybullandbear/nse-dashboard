@@ -30,7 +30,7 @@ function render(data){
     const action=node('td'),button=node('button','Inspect');button.type='button';button.setAttribute('aria-label',`Inspect ${row.symbol} evidence`);button.addEventListener('click',()=>details(row));action.append(button);tr.append(index,setup,plan,gate,action);body.append(tr);
   }
   const rules=$('desk-entry-rules');rules.replaceChildren();
-  const texts=family==='opening_range'?['Complete the 09:15–09:30 range and 30 contiguous warmup bars.','EMA trend, 5-bar momentum and recent OI flow agree.','Two completed breakout bars; reject an extension beyond 1.5 ATR.']:['At least 30 contiguous completed bars with a directional EMA trend.','Prior bar tests the fast EMA; the next closes beyond the prior high/low.','Require momentum and recent OI flow in the same direction.'];
+  const texts=family==='opening_range'?['Complete the 09:15–09:30 range and 30 contiguous closed five-minute warmup bars.','EMA trend, 25-minute momentum and recent OI flow agree.','Two closed five-minute breakout bars; reject an extension beyond 1.5 ATR.']:['At least 30 contiguous completed five-minute bars with a directional EMA trend.','Prior bar tests the fast EMA; the next closes beyond the prior high/low.','Require momentum and recent OI flow in the same direction.'];
   for(const text of texts)rules.append(node('li',text));
   $('desk-cutoffs').textContent=`Entry ${data.policy.entry_start}–${data.policy.entry_end} · force exit ${data.policy.force_exit} · normal close 15:40`;
 }

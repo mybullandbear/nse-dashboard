@@ -1,4 +1,5 @@
 """Authenticated, read-only entry/exit previews; no orders or strategy activation."""
+from app.services.research_workbench import policy_bars
 from datetime import date,datetime,time
 from dataclasses import asdict
 import time as clock
@@ -39,9 +40,12 @@ def workspace(family:str=Query('opening_range',pattern='^(opening_range|trend_pu
         if any(t.get('symbol')==symbol for t in positions):reasons.append('POSITION_ALREADY_OPEN')
         row={'symbol':symbol,'lot_size':settings.LOT_SIZES[symbol],'setup':'WARMING_UP','execution':'BLOCKED','blockers':reasons,'plan':None,'evidence':{},'bars':len(raw)}
         if not raw:reasons.append('NO_RECORDED_SESSION_DATA');rows.append(row);continue
+        raw=policy_bars(raw,cutoff)
+        if not raw:reasons.append('NO_CLOSED_FIVE_MINUTE_BAR');rows.append(row);continue
+        row['bars']=len(raw)
         b=pd.DataFrame(raw)
         for key in ['minute','last_observation']:b[key]=pd.to_datetime(b[key],format='mixed')
-        f=enrich(b);last=f.iloc[-1];direction=int(signals(f,policy)[-1])
+        f=enrich(b,timeframe_minutes=5);last=f.iloc[-1];direction=int(signals(f,policy)[-1])
         row.update(setup='BULLISH_SETUP' if direction>0 else 'BEARISH_SETUP' if direction<0 else 'WAIT',observed_at=last.last_observation.isoformat(),bar_closed_at=last.decision_time.isoformat())
         def n(value):return None if pd.isna(value) else round(float(value),2)
         row['evidence']={'spot':n(last.spot),'ema9':n(last.ema9),'ema21':n(last.ema21),'atr':n(last.atr),'opening_high':n(last.or_high),'opening_low':n(last.or_low),'momentum_atr':n(last.momentum),'oi_flow':n(last.oi_flow),'quality_ok':bool(last.quality_ok),'opening_range_ready':bool(last.range_ready)}
@@ -64,4 +68,4 @@ def workspace(family:str=Query('opening_range',pattern='^(opening_range|trend_pu
                 if row['plan']['quantity']==0:reasons.append(row['plan']['reason'])
         if not replay and (now-last.last_observation.to_pydatetime()).total_seconds()>90:reasons.append('BAR_DATA_STALE')
         rows.append(row)
-    return {'engine_version':VERSION,'validation_status':'UNVALIDATED_PAPER_PREVIEW','trading_enabled':False,'trade_date':day.isoformat(),'as_of':cutoff.isoformat(),'historical_replay':replay,'session':get_session_info(now),'policy':asdict(policy),'risk':{'capital':capital,'available':max(0,capital-deployed),'realized_today':realized,'risk_per_trade_inr':capital*policy.risk_fraction,'daily_loss_limit_inr':capital*policy.daily_loss_fraction,'open_positions':len(positions)},'lot_sizes':settings.LOT_SIZES,'rows':rows,'results_status':'NO_FRESH_OUT_OF_SAMPLE_VALIDATION'}
+    return {'timeframe_minutes':5,'engine_version':VERSION+'-5m','validation_status':'UNVALIDATED_PAPER_PREVIEW','trading_enabled':False,'trade_date':day.isoformat(),'as_of':cutoff.isoformat(),'historical_replay':replay,'session':get_session_info(now),'policy':asdict(policy),'risk':{'capital':capital,'available':max(0,capital-deployed),'realized_today':realized,'risk_per_trade_inr':capital*policy.risk_fraction,'daily_loss_limit_inr':capital*policy.daily_loss_fraction,'open_positions':len(positions)},'lot_sizes':settings.LOT_SIZES,'rows':rows,'results_status':'NO_FRESH_OUT_OF_SAMPLE_VALIDATION'}

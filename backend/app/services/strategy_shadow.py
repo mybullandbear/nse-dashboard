@@ -1,4 +1,5 @@
 """Versioned forward observations for unvalidated strategies; never places orders."""
+from app.services.research_workbench import policy_bars
 from dataclasses import asdict
 import json
 import threading
@@ -15,17 +16,19 @@ class ShadowRecorder:
     def observe(self,chain,now=None):
         if chain is None:return
         now=now or get_current_ist();minute=now.isoformat()[:16];symbol=chain.symbol
+        observation_key=(now.replace(minute=(now.minute//5)*5,second=0,microsecond=0).isoformat(),chain.source in UNSAFE_SOURCES)
         with self.lock:
-            if self.last_seen.get(symbol)==minute:return
+            if self.last_seen.get(symbol)==observation_key:return
             if self.storage is None:
                 from app.db.storage import snapshot_storage
                 self.storage=snapshot_storage
             rows=[] if chain.source in UNSAFE_SOURCES else self.storage.get_strategy_bars(symbol,now.date().isoformat(),now.isoformat())
+            rows=policy_bars(rows,now)
             features=None
             if rows:
                 frame=pd.DataFrame(rows)
                 for key in ['minute','last_observation']:frame[key]=pd.to_datetime(frame[key],format='mixed')
-                features=enrich(frame)
+                features=enrich(frame,timeframe_minutes=5)
             settings=get_settings()
             quote_reference={"lot_size":settings.LOT_SIZES.get(symbol),"exchange_timestamp_verified":False}
             if chain.strikes:
@@ -46,7 +49,7 @@ class ShadowRecorder:
                     direction=int(signals(features,policy)[-1])
                     state='BULLISH_SETUP' if direction>0 else 'BEARISH_SETUP' if direction<0 else 'WAIT'
                     if not row.quality_ok:state='DATA_BLOCKED'
-                observations.append((symbol,minute,now.isoformat(),bar_close,VERSION,family,state,direction,chain.source,json.dumps(inputs,allow_nan=False),json.dumps(asdict(policy)),json.dumps(chain.data_quality),json.dumps(quote_reference)))
+                observations.append((symbol,minute,now.isoformat(),bar_close,VERSION+'-5m',family,state,direction,chain.source,json.dumps(inputs,allow_nan=False),json.dumps(asdict(policy)),json.dumps(chain.data_quality),json.dumps(quote_reference)))
             with self.storage._get_connection() as conn:
                 conn.execute("""CREATE TABLE IF NOT EXISTS strategy_shadow_decisions(
                     id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT NOT NULL,
@@ -58,7 +61,7 @@ class ShadowRecorder:
                 conn.executemany("""INSERT OR IGNORE INTO strategy_shadow_decisions
                     (symbol,observation_minute,observed_at,bar_close_time,engine_version,family,state,direction,source,inputs_json,policy_json,quality_json,quote_reference_json)
                     VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)""",observations)
-            self.last_seen[symbol]=minute
+            self.last_seen[symbol]=observation_key
             if len(self.last_seen)>32:self.last_seen.pop(next(iter(self.last_seen)))
 
 shadow_recorder=ShadowRecorder()
